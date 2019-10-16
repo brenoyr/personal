@@ -3,9 +3,8 @@ from time import sleep
 from random import uniform
 from termios import tcflush, TCIFLUSH
 from sys import stdin
-
-keyboard = Controller()
-string = "This is a really long string"
+# keyboard = Controller()
+# string = "This is a really long string"
 
 # gets password and features (intervals) from input:
 password = raw_input()
@@ -35,5 +34,4 @@ for i in range(len(password)):
 
 # keyboard.press(Key.enter)
 # keyboard.release(Key.enter)
-
 # tcflush(stdin, TCIFLUSH)
