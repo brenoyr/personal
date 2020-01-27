@@ -259,7 +259,8 @@ class LinkedList implements IList_ADT {
 		  cur = cur.getNext();
 	  }
 	  return result;
-  }}
+  }
+}
 
 
 /** A doubly linked list node for our doubly linked list */
@@ -302,7 +303,8 @@ class Node {
   /** sets the pointer to the previous node */
   public void setPrev(Node prev) {
     this.prev = prev;
-  }}
+  }
+}
 
 
 /** contains our entry point */
@@ -363,4 +365,5 @@ public class Main {
     
     // ???
 	System.out.println("Secret Number = 0");
-  }}
+  }
+}
