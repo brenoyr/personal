@@ -1,0 +1,81 @@
+// Breno Yamada Riquieri
+// CSC345 Dining Philosophers
+
+#include <stdio.h>
+#include <pthread.h>
+void *thread_function(int i);
+int eatNum;
+int philNum;
+
+// mutex array will be global so I can
+// reference it in thread_function.
+// Because of that, I had to give
+// an initial size, so I chose 16:
+pthread_mutex_t chopstick[16];
+
+int main(int argc, char *argv[])
+{
+  // first argument will be number of times
+  // each philosopher will eat, while second
+  // argument is how many philosophers exist.
+  // atoi() converts ASCII input to
+  // its numerical value:
+  eatNum = atoi(argv[1]);
+  philNum = atoi(argv[2]);
+  
+  printf("num of times each phil will eat: %d\n", eatNum);
+  printf("num of philosophers: %d\n", philNum);
+
+  // initialize array of philosophers:
+  pthread_t phils[philNum];
+
+  // initialize mutexes:
+  for (int k = 0; k < philNum; k++)
+    {
+      pthread_mutex_init(&chopstick[k], NULL);
+    }
+
+  // initialize philosophers:
+  for (int i = 0; i < philNum; i++)
+    {
+      pthread_create(&phils[i], NULL, &thread_function, (void*) i);
+    }
+
+  // joining threads to terminate:
+  for (int j = 0; j < philNum; j++)
+    {
+      pthread_join(phils[j], NULL);
+    }
+  
+  return 0;
+}
+
+// this function will control philosophers' actions:
+void *thread_function(int i)
+{
+  // while loop to make sure each philosopher
+  // eats however many times user input:
+  int count = 0;
+  while(count < eatNum)
+  {
+    // think:
+    printf("Philosopher %d is thinking\n", i);
+
+    sleep(1);
+
+    // eat:
+    pthread_mutex_lock(&chopstick[i]);
+    pthread_mutex_lock(&chopstick[(i+1)%5]);
+    printf("Philosopher %d is eating\n", i);
+    
+    sleep(0);
+
+    // finish eating once (therefore, increment count):
+    pthread_mutex_unlock(&chopstick[i]);
+    pthread_mutex_unlock(&chopstick[(i+1)%5]);
+    printf("Philosopher %d finished eating\n", i);
+    count++;
+  }
+  
+  pthread_exit;
+}
