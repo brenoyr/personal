@@ -1,0 +1,427 @@
+/**
+ * Name: Breno Yamada Riquieri
+ * Date: 3/25/19
+ * Description: CSC325 Program: Find it fast
+*/
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+import java.text.DecimalFormat;
+
+public class Main
+{
+	public static void main(String[] args) throws FileNotFoundException
+	{
+		System.out.println("\nBreno Yamada Riquieri\nCSC325 Program 1\n");
+		
+		// converting .txt files into a list of lower case character:
+		Scanner file1 = new Scanner(new File("prog1input1.txt"));
+		List<Character> text1 = new List<Character>();
+		String line1 = file1.nextLine();
+		String lowerCase1 = line1.toLowerCase();
+		char value;
+		for(int i = 0; i < lowerCase1.length(); i++)
+		{
+			value = lowerCase1.charAt(i);
+			text1.append(value);
+		}
+		
+		Scanner file2 = new Scanner(new File("prog1input2.txt"));
+		List<Character> text2 = new List<Character>();
+		String line2 = file2.nextLine();
+		String lowerCase2 = line2.toLowerCase();
+		for(int i = 0; i < lowerCase2.length(); i++)
+		{
+			value = lowerCase2.charAt(i);
+			text2.append(value);
+		}		
+		
+		// variables for timing:
+		long start;
+		long finish;
+		long bruteTime1, kmpTime1, bmTime1;
+		long bruteTime2, kmpTime2, bmTime2;
+		
+		Scanner scanner = new Scanner(System.in);
+		
+		boolean REPEAT = true;
+		while (REPEAT == true)
+		{
+			// receiving input from user, and putting it in a linked list:
+			System.out.print("\nEnter pattern: ");
+			String input = scanner.nextLine();
+			List<Character> pattern = new List<Character>();
+			for (int i = 0; i < input.length(); i++)
+			{
+				value = input.charAt(i);
+				pattern.append(value);
+			}
+			
+			
+			// Brute force search:
+			List<Integer> bruteList1 = new List<Integer>();
+			
+			System.out.print("\nFor input 1: ");
+			start = System.nanoTime();
+			bruteList1 = brute(text1, pattern);
+			finish = System.nanoTime();
+			bruteTime1 = finish - start;
+			
+			List<Integer> bruteList2 = new List<Integer>();
+			
+			System.out.print("For input 2: ");
+			start = System.nanoTime();
+			bruteList2 = brute(text2, pattern);
+			finish = System.nanoTime();
+			bruteTime2 = finish - start;
+			
+			// KMP search:
+			List<Integer> kmpList1 = new List<Integer>();
+			
+			System.out.print("\nFor input 1: ");
+			start = System.nanoTime();
+			kmpList1 = KMP(text1, pattern);
+			finish = System.nanoTime();
+			kmpTime1 = finish - start;
+
+			List<Integer> kmpList2 = new List<Integer>();
+			
+			System.out.print("For input 2: ");
+			start = System.nanoTime();
+			kmpList2 = KMP(text2, pattern);
+			finish = System.nanoTime();
+			kmpTime2 = finish - start;
+			
+			// Boyer-Moore search:
+			List<Integer> bmList1 = new List<Integer>();
+			
+			System.out.print("\nFor input 1: ");
+			start = System.nanoTime();
+			bmList1 = Boyer_Moore(text1, pattern);
+			finish = System.nanoTime();
+			bmTime1 = finish - start;
+
+			List<Integer> bmList2 = new List<Integer>();
+			
+			System.out.print("For input 2: ");
+			start = System.nanoTime();
+			bmList2 = Boyer_Moore(text2, pattern);
+			finish = System.nanoTime();
+			bmTime2 = finish - start;
+			
+			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			// ! UNCOMMENT FOLLOWING SECTION !
+			// ! TO DISPLAY LIST OF INDECES: !
+			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			
+			/*
+			System.out.print("\nBrute Force Indeces: ");
+			if(bruteList.isEmpty())
+				System.out.println(-1);
+			else
+				System.out.println(bruteList);
+			
+			System.out.print("        KMP Indeces: ");
+			if(kmpList.isEmpty())
+				System.out.println(-1);
+			else
+				System.out.println(kmpList);
+			
+			System.out.print("Boyer-Moore Indeces: ");
+			if(bmList.isEmpty())
+				System.out.println(-1);
+			else
+				System.out.println(bmList);
+			*/
+			
+			// Displaying timing results for input 1:
+			DecimalFormat df2 = new DecimalFormat(".##");
+			System.out.println("\n\nTIMING FOR INPUT 1:");
+			System.out.print("\n  Brute Force took: " + df2.format(bruteTime1/1000000.0) + " ms");
+			System.out.print("\n          KMP took: " + df2.format(kmpTime1/1000000.0) + " ms");
+			System.out.println("\n  Boyer-Moore took: " + df2.format(bmTime1/1000000.0) + " ms");
+			
+			// Deciding which was the fastest:
+			long min = bruteTime1;
+			if (kmpTime1 < min)
+				System.out.println("  KMP was the fastest");
+			else if (bmTime1 < min)
+				System.out.println("  Boyer-Moore was the fastest");
+			else
+				System.out.println("  Brute Force was the fastest");
+			
+			// Displaying timing results for input 2:
+			System.out.println("\n\nTIMING FOR INPUT 2:");
+			System.out.print("\n  Brute Force took: " + df2.format(bruteTime2/1000000.0) + " ms");
+			System.out.print("\n          KMP took: " + df2.format(kmpTime2/1000000.0) + " ms");
+			System.out.println("\n  Boyer-Moore took: " + df2.format(bmTime2/1000000.0) + " ms");
+			
+			// Deciding which was the fastest:
+			min = bruteTime2;
+			if (kmpTime2 < min)
+				System.out.println("  KMP was the fastest");
+			else if (bmTime2 < min)
+				System.out.println("  Boyer-Moore was the fastest");
+			else
+				System.out.println("  Brute Force was the fastest");
+			
+			System.out.print("\nSearch for another pattern? (y/n): ");
+			String decision = scanner.nextLine();
+			if (decision.equals("n"))
+			{
+				System.out.println("Bye!");
+				REPEAT = false;
+			}
+			else
+				System.out.println("Onto the next!");
+		 }
+	}
+	
+	private static List<Integer> brute(List text, List pattern)
+	{
+		List<Integer> list = new List<Integer>();
+		int counter = 0;
+		int n = text.size();
+		int m = pattern.size();
+		int j;
+		
+		for (int i = 0; i <= n - m; i++)
+		{
+			// j is a counter for how many
+			// characters matched consecutively
+			// (a.k.a. match counter):
+			j = 0;
+			
+			// increment match counter while
+			// 1) we have a match AND
+			// 2) j haven't reached the end of the pattern yet:
+			while (j < m &&
+				   text.getValueFromContainer(text.getContainerAt(i + j))
+				   == pattern.getValueFromContainer(pattern.getContainerAt(j)))
+			{
+				j++;
+			}
+			
+			// (match counter >= length of pattern) means that
+			// every character in the pattern matched, 
+			// having i as the starting index of the match:
+			if (j >= m)
+			{
+				list.append(i);
+				counter++;
+			}
+		}
+		System.out.println("Number of Brute Force matches: " + counter);
+		return list;
+	}
+	
+	private static List<Integer> KMP(List text, List pattern)
+	{
+		List<Integer> list = new List<Integer>();
+		int counter = 0;
+		int n = text.size();
+		int m = pattern.size();
+		
+		/* -------------- FAILURE FUNCTION -------------- */
+		int[] failureFunction = new int[m];
+		failureFunction = fail(text, pattern, failureFunction);
+		// failureFunction[0] = 0;
+		// int j = 0;
+		// int p;
+		
+		// for (int i = 1; i < m; i++)
+		// {
+			// // check if pattern[j] = pattern[i]:
+			// if (pattern.getValueFromContainer(pattern.getContainerAt(i))
+				// == pattern.getValueFromContainer(pattern.getContainerAt(j)))
+			// {
+				// // the value you add to the failure function is the
+				// // value of j + 1, which is the length of the longest
+				// // prefix that matches a suffix:
+				// failureFunction[i] = j + 1;
+				// j++;
+			// }
+			// // if pattern[j] != pattern[i]:
+			// else
+			// {
+				// // if j != 0, we can still check other prefixes and sufixes:
+				// if (j != 0)
+				// {
+					// j = failureFunction[j - 1];
+					// i--;
+				// }
+				// // if j = 0, we checked prefixes and sufixes for equality
+				// // but did not find a match, so store 0:
+				// else
+					// failureFunction[i] = 0;
+			// }
+		}
+		
+		/* ------------------- Search ------------------- */
+		// indeces for search:
+		p = 0;
+		j = 0;
+		
+		while (j < n)
+		{
+			if (text.getValueFromContainer(text.getContainerAt(j))
+				== pattern.getValueFromContainer(pattern.getContainerAt(p)))
+			{
+				/*
+					the index to be appended is j (pointer iterating
+					through text) - m (pattern size) + 1 (accounting
+					index 0, which is the index of where the first 
+					elements matched:
+				*/
+				if (p == m - 1)
+				{
+					list.append(j - m + 1);
+					counter++;
+					
+					// reset pattern counter, and start next search
+					// from 1 index ahead of where the last match happened:
+					p = 0;
+					j = j - m + 2;
+				}
+				// increment pointers to check if next
+				// value in text and pattern match:
+				else
+				{
+					j++;
+					p++;
+				}
+			}
+			/*
+				if we are past checking first pattern value
+				and we got a mismatch, check failure function
+				to decide if we can skip some comparisons:
+			*/
+			else if (p > 0)
+				p = failureFunction[p -1];
+			// otherwise, proceed to check pattern[0]
+			// with next value in text[] by incrementing
+			// index traversing text:
+			else
+				j++;
+		}
+		System.out.println("Number of         KMP matches: " + counter);
+		return list;
+	}
+	
+	public static int[] fail(List text, List pattern, int[] failureFunction)
+	{
+		failureFunction[0] = 0;
+		int j = 0;
+		int p;
+		
+		for (int i = 1; i < m; i++)
+		{
+			// check if pattern[j] = pattern[i]:
+			if (pattern.getValueFromContainer(pattern.getContainerAt(i))
+				== pattern.getValueFromContainer(pattern.getContainerAt(j)))
+			{
+				// the value you add to the failure function is the
+				// value of j + 1, which is the length of the longest
+				// prefix that matches a suffix:
+				failureFunction[i] = j + 1;
+				j++;
+			}
+			// if pattern[j] != pattern[i]:
+			else
+			{
+				// if j != 0, we can still check other prefixes and sufixes:
+				if (j != 0)
+				{
+					j = failureFunction[j - 1];
+					i--;
+				}
+				// if j = 0, we checked prefixes and sufixes for equality
+				// but did not find a match, so store 0:
+				else
+					failureFunction[i] = 0;
+			}
+		}
+		return failureFunction;
+	}
+	
+	private static List<Integer> Boyer_Moore(List text, List pattern)
+	{
+		List<Integer> list = new List<Integer>();
+		int counter = 0;
+		int n = text.size();
+		int m = pattern.size();		
+		int t = m - 1;
+		int p = m - 1;
+		
+		while (t < n)
+		{
+			if (text.getValueFromContainer(text.getContainerAt(t))
+				== pattern.getValueFromContainer(pattern.getContainerAt(p)))
+			{
+				if (p <= 0)
+				{
+					list.append(t);
+					counter++;
+					
+					// jump for text pointer is immediately
+					// after the pattern was matched:
+					t += m;
+					
+					// reset pattern pointer to keep
+					// checking for other possible matches:
+					p = m - 1;
+				}
+				else
+				{
+					// decrement to keep checking
+					// if previous also matches:
+					t--;
+					p--;
+				}
+			}
+			else
+			{
+				// find last occurence of the mismatched value:
+				int j = last(text, pattern, t);
+				
+				// min is the jump for text pointer,
+				// used to move text pointer appropriately:
+				int min;
+				
+				// accounting for out-of-bounds index:
+				if (p < j + 1)
+					min = p;
+				else
+					min = j + 1;
+				
+				t += m - min;
+				
+				// reset pattern pointer to start over:
+				p = m - 1;
+			}
+		}
+		System.out.println("Number of Boyer-Moore matches: " + counter);
+		return list;
+	}
+	
+	/*
+		PURPOSE: Helper function to find next instance of the
+				 mismatched text value in the pattern.
+	*/
+	public static int last(List text, List pattern, int t)
+	{
+		// iterating backwards through the entire 
+		// pattern to check for equality. 
+		// we'll use the first occurence found:
+		for (int x = pattern.size()-1; x >= 0; x--)
+		{
+			if (text.getValueFromContainer(text.getContainerAt(t))
+				== pattern.getValueFromContainer(pattern.getContainerAt(x)))
+					return x;
+		}
+		// return -1 if no match is found,
+		// main will handle this value too:
+		return -1;
+	}
+}
