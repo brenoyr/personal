@@ -1,0 +1,559 @@
+// Not finished
+
+public class RB<T extends Comparable<T>> extends AVL<T>
+{
+    private Node<T> parent;
+    private Node<T> root;
+
+
+    public RB()
+    {
+        super();
+    }
+
+    public boolean search(T value)
+    {
+        Node<T> cur = root;
+        while (cur != null)
+        {
+            if (value.compareTo(cur.getData()) < 0)
+                cur = cur.getLeft();
+            else if (value.compareTo(cur.getData()) > 0)
+                cur = cur.getRight();
+            else if (value.compareTo(cur.getData()) == 0)
+                return true;
+        }
+        return false;
+    }
+
+    public void insert(T data)
+    {
+        // Regular iterative BST insertion.
+        // This helps making it clear how nodes
+        // are keeping track of their parents:
+        Node<T> newNode = new Node<T>(data);
+        cur = root;
+        boolean done = false;
+
+        if (root == null)
+        {
+            root = newNode;
+            root.setBlack();
+            cur = root;
+        }
+        else
+        {
+            while (done == false)
+            {
+                if (data.compareTo(cur.getData()) < 0)
+                {
+                    if (cur.getLeft() == null)
+                    {
+                        cur.setLeft(newNode);
+                        // important to keep track of parent here:
+                        cur.getLeft().setParent(cur);
+                        cur = cur.getLeft();
+                        done = true;
+                    } else
+                    {
+                        cur = cur.getLeft();
+                    }
+                } else if (data.compareTo(cur.getData()) > 0)
+                {
+                    if (cur.getRight() == null)
+                    {
+                        cur.setRight(newNode);
+                        // keep track of parent:
+                        cur.getRight().setParent(cur);
+                        cur = cur.getRight();
+                        done = true;
+                    } else
+                        cur = cur.getRight();
+                }
+            }
+        }
+        // ----- End of regular BST insertion -----
+
+        // check if there are any violations:
+        violation(cur);
+    }
+
+    /*
+        this is arguably THE most important
+        method I created for Red Black Tree.
+        It solves every violation that a recoloring
+        or insertion could create.
+    */
+    private void violation(Node<T> cur)
+    {
+        // Check if parent is red.
+        // If parent isn't red, it's black
+        // If parent is black, do nothing:
+        if (!adjacentReds(cur))
+		{
+			/*
+				a special case would be if root
+				was involved. If so, root being black
+				can't discard the possibility of needing
+				to recolor cur. Root can be considered as
+				red when dealing with recoloring siblings.
+				Otherwise, root being black would say 
+				everything is fine when there is still a 
+				possibility of inbalance.
+			*/
+			if (cur.getParent() == root)
+			{
+				Node<T> sibling = getSibling(cur);
+				if (sibling != null && sibling.getRed())
+				{
+					recolor(cur, sibling);
+				}
+			}
+			else
+				return;
+		}
+
+        // Parent is red here:
+        else
+        {
+            Node<T> parent = cur.getParent();
+            Node<T> sibling = getSibling(parent);
+
+            // parent's sibling is red here
+            if (sibling != null && sibling.getRed())
+            {
+                // recolor parent and sibling to black
+                recolor(parent, sibling);
+                parent = parent.getParent();
+				
+				
+
+                // check if the recoloring created
+                // another violation up the tree:
+                if (parent!=null)
+                    violation(parent);
+            }
+
+            // parent's sibling is black here
+            // rotation needed
+            else
+            {
+                rotate(cur, parent);
+            }
+        }
+    }
+
+    /*
+        returns false if parent is root or black
+    */
+    private boolean adjacentReds(Node<T> node)
+    {
+
+        // root case:
+        if (node.getParent() == null)
+            return false;
+        else
+            return (node.getRed() && node.getParent().getRed());
+    }
+
+    /*
+        finds sibling of a node.
+        usually sending a node's parent,
+        that's why the formal parameter is
+        called parent
+    */
+    private Node<T> getSibling(Node<T> parent)
+    {
+        Node<T> grandParent = parent.getParent();
+
+		if (grandParent != null)
+		{
+			if (parent == grandParent.getLeft())
+			{
+				if (grandParent.getRight() != null)
+					return grandParent.getRight();
+				else
+					return null;
+			} else if (parent == grandParent.getRight())
+			{
+				if (grandParent.getLeft() != null)
+					return grandParent.getLeft();
+				else
+					return null;
+			}
+			// grandparent is null:
+			else
+				return null;
+		}
+		
+		return null;
+    }
+
+    private void recolor(Node<T> parent, Node<T> sibling)
+    {
+        parent.setBlack();
+
+        // check if sibling was null
+        // if sibling is null, there's nothing to recolor:
+        if (sibling != null)
+            sibling.setBlack();
+
+        // check if grandparent is root
+        // only recolor if it isn't:
+        if (parent.getParent() != root || parent.getParent() != null)
+		{
+			Node<T> grandparent = parent.getParent();
+			grandparent.setRed();
+			if (grandparent.getParent() != null)
+				violation(grandparent.getParent());
+			// MOVING up to grandparent recursively:
+			violation(grandparent);
+		}
+        else
+            return;
+		
+        // after all recoloring, set root to black
+        // just in case it became red along the way:
+        root.setBlack();
+
+    }
+
+    private void recolorRotation(Node<T> subroot, Node<T> newChild)
+    {
+        subroot.setBlack();
+
+        // new child couldn't have been black
+        newChild.setRed();
+        root.setBlack();
+        violation(subroot);
+    }
+
+    private void rotate(Node<T> cur, Node<T> parent)
+    {
+		
+        // find which rotation case
+		
+        // right something
+        if (parent == parent.getParent().getRight())
+        {
+            // right right
+            if (cur == parent.getRight())
+            {
+                // rotation:
+                Node<T> y = parent;
+                Node<T> x = parent.getParent();
+                Node<T> z = parent.getParent().getParent();
+                Node<T> T2 = y.getLeft();
+
+                y.setLeft(x);
+                x.setRight(T2);
+                x.setParent(y);
+                y.setParent(z);
+                if (z != null)
+                    z.setRight(y);
+                else
+                    root = y;
+                // ---- end of rotation ----
+
+                // recolor here:
+                recolorRotation(y, x);
+            }
+
+            // right left:
+            else
+            {
+                // ---- making right left into a right right: ----
+                parent.getParent().setRight(cur);
+
+                cur.setParent(parent.getParent());
+                cur.setRight(parent);
+                parent.setLeft(null);
+                parent.setParent(cur);
+
+                cur = cur.getRight();
+
+                parent = parent.getParent();
+
+                // ---- single rotation ----
+                // (just like right right situation)
+                Node<T> y = parent;
+                Node<T> x = parent.getParent();
+
+                Node<T> z = parent.getParent().getParent();
+                Node<T> T2 = y.getLeft();
+
+                y.setLeft(x);
+                x.setRight(T2);
+                y.setParent(z);
+                x.setParent(y);
+                if (z != null)
+                    z.setRight(y);
+                else
+                    root = y;
+                // ---- end of rotation ----
+
+                // recolor here:
+                recolorRotation(y, x);
+            }
+
+        }
+
+        // left something
+        else
+        {
+			
+            // left left
+            if (cur == parent.getLeft())
+            {
+                // rotation:
+                Node<T> x = parent;
+                Node<T> y = parent.getParent();
+                Node<T> z = parent.getParent().getParent();
+                Node<T> T2 = x.getRight();
+
+                x.setRight(y);
+                y.setLeft(T2);
+                y.setParent(x);
+                x.setParent(z);
+                if (z != null)
+                    z.setLeft(x);
+                else
+                    root = x;
+                // ---- end of rotation ----
+
+                // recolor:
+                recolorRotation(x, y);
+            }
+            // left right
+            else
+            {
+                // ---- making left right into a left left: ----
+                parent.getParent().setLeft(cur);
+
+                cur.setParent(parent.getParent());
+                cur.setLeft(parent);
+                parent.setRight(null);
+                parent.setParent(cur);
+
+                cur = cur.getLeft();
+
+                parent = parent.getParent();
+
+                // ---- single rotation ----
+                // (just like left left situation)
+                Node<T> x = parent;
+                Node<T> y = parent.getParent();
+                Node<T> z = parent.getParent().getParent();
+                Node<T> T2 = x.getRight();
+
+                x.setRight(y);
+                y.setLeft(T2);
+                x.setParent(z);
+                y.setParent(x);
+                if (z != null)
+                    z.setLeft(x);
+                else
+                    root = x;
+                // ---- end of rotation ----
+
+                // recolor:
+                recolorRotation(x, y);
+
+            }
+        }
+    }
+	
+    public void delete(T data)
+    {
+        Node<T> newNode = new Node<T>(data);
+        Node<T> cur = root;
+        boolean found = false;
+
+        // traverse looking for value:
+        while (cur != null)
+        {
+            if (data.compareTo(cur.getData()) < 0)
+                cur = cur.getLeft();
+            else if (data.compareTo(cur.getData()) > 0)
+                cur = cur.getRight();
+            else if (data.compareTo(cur.getData()) == 0)
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            return;
+        }
+        // if found:
+        else
+        {
+            // setting deleted node to be successor,
+            // and getting leaf's parent:
+            Node<T> leaf = super.successor(cur.getRight());
+			if (leaf != null)
+			{
+				cur.setData(leaf.getData());
+				Node<T> parent = leaf.getParent();
+			}
+			else
+			{
+				return;
+			}
+
+            // if leaf/parent is red, simply delete it:
+            if (parent != null && (leaf.getRed() || parent.getRed()))
+            {
+                if (leaf == parent.getRight())
+                {
+                    if (leaf.getRight() == null && leaf.getLeft() == null)
+                        parent.setRight(null);
+                    else
+                    {
+                        if (leaf.getRight() != null)
+                            parent.setRight(leaf.getRight());
+                        else
+                            parent.setRight(leaf.getLeft());
+
+                        leaf = parent.getRight();
+
+                        leaf.setBlack();
+
+                        violation(parent.getRight());
+                    }
+                }
+                else
+                {
+                    if (leaf.getRight() == null && leaf.getLeft() == null)
+                        parent.setLeft(null);
+                    else
+                    {
+                        if (leaf.getRight() != null)
+                            parent.setLeft(leaf.getRight());
+                        else
+                            parent.setLeft(leaf.getLeft());
+						
+                        leaf = parent.getLeft();
+
+
+                        leaf.setBlack();
+
+                        violation(leaf);
+                    }
+                }
+            }
+            // both are black:
+            else
+            {
+                Node<T> remainingChild = null;
+                boolean left = false;
+                boolean right = false;
+
+                // check null parent
+				if (parent != null)
+				{
+					if (leaf == parent.getRight())
+					{
+						parent.setRight(null);
+						if (parent.getLeft() != null)
+						{
+							remainingChild = parent.getLeft();
+							left = true;
+						}
+					}
+					else
+					{
+						parent.setLeft(null);
+						if (parent.getRight() != null)
+						{
+							remainingChild = parent.getRight();
+							right = true;
+						}
+					}
+				}
+
+                // if there's no other child, do nothing:
+                if (remainingChild == null)
+                    return;
+                else
+                {
+                    // if remaining child is red, rotate about the parent
+                    if (remainingChild.getRed())
+                    {
+                        rotate(remainingChild, parent);
+                    }
+                    // if remaining child is black
+                    else
+                    {
+                        int both_black = 0;
+
+                        Node<T> grandChildLeft = remainingChild.getLeft();
+                        Node<T> grandChildRight = remainingChild.getRight();
+
+                        if (grandChildLeft != null || !grandChildLeft.getRed())
+                            both_black++;
+
+                        if (grandChildRight != null || !grandChildRight.getRed())
+                            both_black++;
+
+                        // 1. both black or null?
+                        if (both_black == 2)
+                        {
+                            // make child red:
+                            remainingChild.setRed();
+                        }
+                        // 2. at least one red?
+                        else
+                        {
+                            // rotate about the parent:
+                            rotate(remainingChild, parent);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+	public void inorderTraversal()
+	{
+		inorderTraversalHelper(root);
+	}
+	
+	private void inorderTraversalHelper(Node<T> node)
+	{
+		if (node == null)
+			return;
+		// visit left trees/nodes first, process node,
+		// then right trees/nodes last (a.k.a. LNR):
+		else
+		{
+			inorderTraversalHelper(node.getLeft());
+			
+			System.out.print(node.getData() + ", ");
+			
+			inorderTraversalHelper(node.getRight());
+		}
+	}
+
+    public void printTree()
+    {
+        printTreeHelper(root);
+    }
+
+    private void printTreeHelper(Node<T> node)
+    {
+        if (node == null)
+            return;
+        else
+        {
+            System.out.println("\nNode: " + node.getData() + ", ");
+
+
+            System.out.println("Is node red?: " + node.getRed() + ", ");
+            printTreeHelper(node.getLeft());
+            printTreeHelper(node.getRight());
+        }
+    }
+}
