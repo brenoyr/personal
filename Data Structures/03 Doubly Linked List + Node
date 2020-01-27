@@ -1,0 +1,211 @@
+/** Doubly Linked List implementation of our List */
+public class List
+{
+  private Node head;
+  private Node tail;
+  private int count;
+  
+  public List()
+  {
+	  head = null;
+	  tail = null;
+	  count = 0;
+  }
+  
+  /** PURPOSE: Appends a new node to the end of the linked list by making
+			   it the new tail, and back pointing to the previous tail.
+			   
+	  @param value - value of the node being appended
+  */
+  public void append(char value)
+  {
+	  Node node = new Node(value);
+	  
+	  if (head == null)
+	  {
+		  head = node;
+		  tail = node;
+	  }
+	  else
+	  {
+		  tail.setNext(node);
+		  node.setPrev(tail);
+		  
+		  // Wrapping it:
+		  node.setNext(head);
+		  head.setPrev(node);
+	  }
+	  tail = node;
+	  count++;
+  }
+  
+  /** PURPOSE: Prepends a new node to the beginning of the linked list
+			   by making it the head, and pointing to previous head.
+			   
+	@param value - value of the node being prepended
+*/
+  public void prepend(char value)
+  {
+	  Node node = new Node(value);
+	  
+	  if (head == null)
+	  {
+		  head = node;
+		  tail = node;
+	  }
+	  else
+	  {
+		  node.setNext(head);
+		  head.setPrev(node);
+		  
+		  // Wrapping it:
+		  node.setPrev(tail);
+		  tail.setNext(node);
+	  }
+	  head = node;
+	  count++;
+  }
+  
+  /** PURPOSE: Deletes target by making previous node point to next,
+			   and next point back to previous.	
+			   
+	  @param container - node being deleted
+  */
+  public void delete(Object container)
+  {
+	  Node target = ((Node)container);
+	  target.getNext().setPrev(target.getPrev());
+	  target.getPrev().setNext(target.getNext());
+	  
+	  if (target.getNext() == tail)
+		  target.getNext().setPrev(head);
+	  
+	  if (target.getPrev() == head)
+		  target.getPrev().setPrev(tail);
+	  
+	  count--;
+  }
+  
+  /** PURPOSE: Returns count, the variable incremented everytime
+			   a new node was appendend or prepended.
+	  
+	  @return count - how many items are in the list
+  */
+  public int size()
+  {
+	  return count;
+  }
+  
+  /** PURPOSE: Goes through every node checking if value is found.
+			   If not found, returns null.
+	  
+	  @param value - value of the node being searched for
+	  @return cur - node found
+  */
+  public Object search(char value)
+  {
+	  Node cur = head;
+	  
+	  while (cur != null)
+	  {
+		  if (cur.getData() == value)
+			  return cur;
+		  else
+			  cur = cur.getNext();
+	  }
+	  return null;
+  }
+  
+  /** PURPOSE: Creates an empty string and append values of every
+			   node to it.
+	  
+	  @return result - full string for display
+  */
+  public String toString()
+  {
+	  String result = "";
+	  Node cur = head;
+	  
+	  // First one is added manually because we will know when
+	  // to stop whenever it comes full circle back to head.
+	  // Therefore,  the while loop will check if we reached head
+	  // again, meaning we can't enter the loop if cur = head.
+	  result += cur.getData();
+	  cur = cur.getNext();
+	  
+	  while (cur != head)
+	  {
+		  char value = cur.getData();
+		  result += value;
+		  cur = cur.getNext();
+	  }
+	  return result;
+  }
+  
+  /** PURPOSE: retrieve value from container
+  
+	  @param container - node that holds the value being retrieved
+	  @return value
+  */
+  public char getValueFromContainer(Object container)
+  {
+	  Node target = ((Node)container);
+	  return target.getData();
+  }
+  
+  public Object getContainerAt(int index)
+  {
+	  Node cur = head;
+	  
+	  for (int i = 0; i <= index; i++)
+	  {
+		  cur = cur.getNext();
+	  }
+	  
+	  return cur;
+  }
+}
+
+
+/** A doubly linked list node for our doubly linked list */
+class Node {
+  /** the value held in this node */
+  private char data;
+  
+  /** points to the next node */
+  private Node next;
+  
+  /** points to the previous node */
+  private Node prev;
+  
+  /** constructor */
+  public Node(char data) {
+    this.data = data;
+    next = prev = null;
+  }
+  
+  /** returns the pointer to the next node */
+  public Node getNext() {
+    return next;
+  }
+  
+  /** returns the pointer to the previous node */
+  public Node getPrev() {
+    return prev;
+  }
+  
+  /** returns the value held inside this node */
+  public char getData() {
+    return data;
+  }
+  
+  /** sets the pointer to the next node */
+  public void setNext(Node next) {
+    this.next = next;
+  }
+  
+  /** sets the pointer to the previous node */
+  public void setPrev(Node prev) {
+    this.prev = prev;
+  }
+}
