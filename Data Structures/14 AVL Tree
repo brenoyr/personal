@@ -1,0 +1,454 @@
+/**
+
+ DISCLAIMER:    This algorithm was heavily influenced by the
+                algorithm given in GeeksForGeeks.
+                I did my best making it my own, making it
+                agreeable with my own Node class and BST,
+                and adding my own necessary touches for
+                the understanding the logical parts
+                that didn't make sense to me initially.
+
+                Although I made very significant changes, as well
+                as my own "translation" and extra decisions/implementations,
+                I'd appreciate if I'm contacted in case there are
+                any concerns about plagiarism, as I want to stay
+                as far away from plagiarizing as I can.
+
+ */
+public class AVL<T extends Comparable<T>> extends BST<T>
+{
+
+    /*
+        The GeeksForGeeks implementation uses recursion to find the
+        correct place for next value to be inserted. The node returns
+        are crucial for rotations in this implementation.
+    */
+    private Node<T> root;
+
+    public AVL()
+    {
+        super();
+    }
+
+    // getting max between 2 ints (used
+    // for playing with heights):
+    private int max(int a, int b)
+    {
+        // i don't like ternaries but here we go:
+        return (a > b) ? a : b;
+    }
+
+    public boolean search(T value)
+    {
+        Node<T> cur = root;
+
+        while (cur != null)
+        {
+            if (value.compareTo(cur.getData()) < 0)
+                cur = cur.getLeft();
+            else if (value.compareTo(cur.getData()) > 0)
+                cur = cur.getRight();
+            else if (value.compareTo(cur.getData()) == 0)
+                return true;
+        }
+        return false;
+    }
+
+
+    // rotates left on x:
+    protected Node<T> leftRotate(Node<T> x)
+    {
+
+        Node<T> y = x.getRight();
+        Node<T> T2 = y.getLeft();
+
+        // Perform rotation
+        y.setLeft(x);
+        x.setRight(T2);
+
+
+        /*
+			Update heights.
+			I know this looks EXTREMELY ugly, but adapting the code from
+			GeeksForGeeks was the only way I could understand the different
+			NullPointerExceptions that could happen, and this is how
+			I was able to handle them. I don't have much time to spend trying
+			to make this pretty, so I apologize for this mess.
+
+			I've attempted modifying getter in Node class but I couldn't
+			figure out how to reference the object itself inside its class.
+			The "this" keyword didn't help me much.
+		*/
+        // If ANY of the nodes are null, there is a problem with comparing height of nulls
+        if (x.getLeft() == null || x.getRight() == null || y.getLeft() == null || y.getRight() == null )
+        {
+            // if x is a leaf:
+            if (x.getLeft() == null && x.getRight() == null)
+                x.setHeight(0);
+
+                // if x has only a right child:
+            else if (x.getLeft() == null)
+                x.setHeight(max(0, x.getRight().getHeight()) + 1);
+
+                // if x has only a left child:
+            else if (x.getRight() == null)
+                x.setHeight(max(x.getLeft().getHeight(), 0 + 1));
+
+                // if it has 2 children:
+            else
+                x.setHeight(max(x.getLeft().getHeight(), x.getRight().getHeight()) + 1);
+
+            // if y is a leaf:
+            if (y.getLeft() == null && y.getRight() == null)
+                y.setHeight(0);
+
+                // if y has only a right child:
+            else if (y.getLeft() == null)
+                y.setHeight(max(0, y.getRight().getHeight()) + 1);
+
+                // if y has only a left child:
+            else if (y.getRight() == null)
+                y.setHeight(max(y.getLeft().getHeight(), 0 + 1));
+
+                // if it has 2 children:
+            else
+                y.setHeight(max(y.getLeft().getHeight(), y.getRight().getHeight()) + 1);
+        }
+        // otherwise, both have children:
+        else
+        {
+            x.setHeight(max(x.getLeft().getHeight(), x.getRight().getHeight()) + 1);
+            y.setHeight(max(y.getLeft().getHeight(), y.getRight().getHeight()) + 1);
+        }
+        // Return new root
+        return y;
+    }
+
+    // rotates right on y:
+    private Node<T> rightRotate(Node<T> y)
+    {
+
+        Node<T> x = y.getLeft();
+        Node<T> T2 = x.getRight();
+
+        // Perform rotation
+        x.setRight(y);
+        y.setLeft(T2);
+
+
+        /*
+			Same story as with leftRotate. Again, I apologize for
+			not being able to figure out how to make it prettier.
+		*/
+        // If ANY of the nodes are null, there is a problem with comparing height of nulls
+        if (x.getLeft() == null || x.getRight() == null || y.getLeft() == null || y.getRight() == null )
+        {
+            // if x is a leaf:
+            if (x.getLeft() == null && x.getRight() == null)
+                x.setHeight(0);
+
+                // if x has only a right child:
+            else if (x.getLeft() == null)
+                x.setHeight(max(0, x.getRight().getHeight()) + 1);
+
+                // if x has only a left child:
+            else if (x.getRight() == null)
+                x.setHeight(max(x.getLeft().getHeight(), 0 + 1));
+
+                // if it has 2 children:
+            else
+                x.setHeight(max(x.getLeft().getHeight(), x.getRight().getHeight()) + 1);
+
+            // if y is a leaf:
+            if (y.getLeft() == null && y.getRight() == null)
+                y.setHeight(0);
+
+                // if y has only a right child:
+            else if (y.getLeft() == null)
+                y.setHeight(max(0, y.getRight().getHeight()) + 1);
+
+                // if y has only a left child:
+            else if (y.getRight() == null)
+                y.setHeight(max(y.getLeft().getHeight(), 0 + 1));
+
+                // if it has 2 children:
+            else
+                y.setHeight(max(y.getLeft().getHeight(), y.getRight().getHeight()) + 1);
+        }
+        // otherwise, both have children:
+        else
+        {
+            x.setHeight(max(x.getLeft().getHeight(), x.getRight().getHeight()) + 1);
+            y.setHeight(max(y.getLeft().getHeight(), y.getRight().getHeight()) + 1);
+        }
+
+        // Return new root
+        return x;
+    }
+
+    // Get Balance factor of node N
+    // This is what will decide if there is
+    // an imbalance, which means the need for
+    // rotations.
+    private int getBalance(Node<T> N) {
+        if (N == null)
+            return 0;
+
+        // accounting for leaf node:
+        if (N.getLeft() == null && N.getRight() == null)
+            return 0;
+
+        // no left child, but has right:
+        if (N.getLeft() == null)
+            return 0 - N.getRight().getHeight();
+
+            // no right child, but has left:
+        else if (N.getRight() == null)
+            return N.getLeft().getHeight();
+
+            // has both:
+        else
+            return N.getLeft().getHeight() - N.getRight().getHeight();
+    }
+
+    public void insert(T data)
+    {
+        root = insertNode(root, data);
+    }
+
+    private Node<T> insertNode(Node<T> node, T data)
+    {
+        // Regular BST insertion based on recursion:
+        if (node == null)
+            return (new Node(data));
+
+        // go left:
+        if (data.compareTo(node.getData()) < 0)
+            node.setLeft(insertNode(node.getLeft(), data));
+        // go right:
+        else if (data.compareTo(node.getData()) > 0)
+            node.setRight(insertNode(node.getRight(), data));
+        // duplicate value/data:
+        else
+            return node;
+
+        // Update height:
+        // Have to account for null references:
+        // Left child is null:
+        if (node.getLeft() == null)
+            node.setHeight(1 + max(0, node.getRight().getHeight()));
+
+            // Right child is null:
+        else if (node.getRight() == null)
+            node.setHeight(1 + max(node.getLeft().getHeight(), 0));
+
+        // Get balance factor to decide whether or not
+        // its imbalanced and in need of rotation(s):
+        int balance = getBalance(node);
+
+
+        // The following are the 4 cases of imbalance.
+        // These solutions are consistent throughtout most
+        // algorithms found online, so I followed them:
+
+        // left-left:
+        if (balance > 1 && data.compareTo(node.getLeft().getData()) < 0)
+            return rightRotate(node);
+
+        // right-right:
+        if (balance < -1 && data.compareTo(node.getRight().getData()) > 0)
+            return leftRotate(node);
+
+        // left-right:
+        if (balance > 1 && data.compareTo(node.getLeft().getData()) > 0)
+        {
+            node.setLeft(leftRotate(node.getLeft()));
+            return rightRotate(node);
+        }
+
+        // right-left:
+        if (balance < -1 && data.compareTo(node.getRight().getData()) < 0)
+        {
+            node.setRight(rightRotate(node.getRight()));
+            return leftRotate(node);
+        }
+
+        // return the final node
+        // for correct placement:
+        return node;
+    }
+
+
+    /*
+        Finds successor (new root)
+        Go right once, then left until null:
+    */
+    protected Node<T> successor(Node<T> node)
+    {
+        // parameter passed was a .getRight() method
+        // so no need to go right inside here:
+        Node<T> successor = node;
+
+        /* loop down to find the leftmost leaf */
+		if (successor != null)
+		{
+			while (successor.getRight() != null)
+				successor = successor.getLeft();
+		}
+
+        return successor;
+    }
+
+    public void delete(T data)
+    {
+        root = deleteNode(root, data);
+    }
+
+    private Node<T> deleteNode(Node<T> root, T data)
+    {
+        // regular BST deletion first:
+        if (root == null)
+            return root;
+
+        // value/data lesser, go left:
+        if (data.compareTo(root.getData()) < 0)
+            root.setLeft(deleteNode(root.getLeft(), data));
+
+        // value/data greater, go right:
+        else if (data.compareTo(root.getData()) > 0)
+            root.setRight(deleteNode(root.getRight(), data));
+
+        // else found node to be deleted:
+        else
+        {
+            // node with one child or no children
+            if ((root.getLeft() == null) || (root.getRight() == null))
+            {
+                Node<T> temp = null;
+                if (temp == root.getLeft())
+                    temp = root.getRight();
+                else
+                    temp = root.getLeft();
+
+                // no children, just make deleted
+                // node reference null:
+                if (temp == null)
+                {
+                    temp = root;
+                    root = null;
+                }
+                // one child:
+                // root becomes non empty child:
+                else
+                    root = temp;
+            }
+            else
+            {
+
+                // node with two children: Get the inorder
+                // successor (smallest in the right subtree)
+                Node<T> temp = successor(root.getRight());
+
+                // Copy the inorder successor's data to this node
+                root.setData(temp.getData());
+
+                // Delete the inorder successor
+                root.setRight(deleteNode(root.getRight(), temp.getData()));
+            }
+        }
+
+        // return if no tree left
+        // (a.k.a. there was only 1 node):
+        if (root == null)
+            return root;
+
+        // Update height:
+        // Have to account for null references:
+        if (root.getLeft() == null && root.getRight() == null)
+            root.setHeight(0);
+
+        // Left child is null:
+        else if (root.getLeft() == null)
+            root.setHeight(max(0, root.getRight().getHeight()) + 1);
+
+        // Right child is null:
+        else if (root.getRight() == null)
+            root.setHeight(max(root.getLeft().getHeight(), 0) + 1);
+
+        // Have both children:
+        else
+            root.setHeight(max(root.getLeft().getHeight(), root.getRight().getHeight()) + 1);
+
+        // Get balance factor to decide whether or not
+        // its imbalanced and in need of rotation(s):
+        int balance = getBalance(root);
+
+
+        // The following are the 4 cases of imbalance
+        // for deletion. These solutions are also consistent
+        // throughtout most algorithms online, so I followed
+        // them too:
+
+        // left-left:
+        if (balance > 1 && getBalance(root.getLeft()) >= 0)
+            return rightRotate(root);
+
+        // left-right:
+        if (balance > 1 && getBalance(root.getLeft()) < 0)
+        {
+            root.setLeft(leftRotate(root.getLeft()));
+            return rightRotate(root);
+        }
+
+        // right-right:
+        if (balance < -1 && getBalance(root.getRight()) <= 0)
+            return leftRotate(root);
+
+        // right-left:
+        if (balance < -1 && getBalance(root.getRight()) > 0)
+        {
+            root.setRight(rightRotate(root.getRight()));
+            return leftRotate(root);
+        }
+
+        return root;
+    }
+
+	public void inorderTraversal()
+	{
+		inorderTraversalHelper(root);
+	}
+	
+	private void inorderTraversalHelper(Node<T> node)
+	{
+		if (node == null)
+			return;
+		// visit left trees/nodes first, process node,
+		// then right trees/nodes last (a.k.a. LNR):
+		else
+		{
+			inorderTraversalHelper(node.getLeft());
+			
+			System.out.print(node.getData() + ", ");
+			
+			inorderTraversalHelper(node.getRight());
+		}
+	}
+
+    public void preorderTraversal()
+    {
+        preorderTraversalHelper(root);
+    }
+
+    private void preorderTraversalHelper(Node<T> node)
+    {
+        if (node != null)
+        {
+            // process node, visit left trees/nodes,
+            // then right trees/nodes last (a.k.a. NLR):
+            System.out.print(node.getData() + " ");
+            preorderTraversalHelper(node.getLeft());
+            preorderTraversalHelper(node.getRight());
+        }
+    }
+} 

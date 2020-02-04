@@ -1,0 +1,168 @@
+/**
+ * Name: Breno Yamada Riquieri
+ * Date: 12/9/18
+ * Description:  Creates list of people, then search someone
+ *				 based on their name or age.
+ */
+ 
+/**
+	People class:
+	- involves an array of Person objects.
+	- methods for adding new objects to the array (no more than 5),
+	  and searching for a person given a name or age.
+*/
+class People
+{
+	
+	private Person[] group;
+	private int index;
+	
+	public People()
+	{
+		group = new Person[5];
+	}
+
+	/** 
+		PURPOSE: add a new Person to the group array.
+		
+		@param p - the Person object trying to be added.
+		@return false if array was full; true if array was not.
+	*/
+	public boolean addPerson(Person p)
+	{	
+		// if last slot is filled,
+		// group is full and returns false:
+		if (group[group.length-1] != null)
+			return false;
+		// fills next empty slot otherwise:
+		else
+		{
+			boolean filled = false;
+			int i = 0;
+			
+			// while loop that prevents filling more than
+			// one slot at a time in the group:
+			while (filled == false && i < group.length)
+			{
+				if (group[i] == null)
+				{
+					group[i] = p;
+					filled = true;
+				}
+				i++;
+			}
+			return true;
+		}
+	}
+
+	/** 
+		PURPOSE: find a Person in the array by name.
+		@param name - name of the Person we are looking for.
+		@return Person object from group if found; null if not found.
+	*/
+	public Person findPersonByName(String name)
+	{
+		for (int i = 0; i < 5; i++)
+		{
+			if (group[i].name == name)
+			{
+				index = i;
+				return group[index];
+			}
+		}
+		return null;
+	}
+	
+	/** 
+		PURPOSE: find a Person in the array by age.
+		@param age - age of the Person we are looking for.
+		@return Person object from group if found; null if not found.
+	*/	
+	public Person findPersonByAge(int age)
+	{
+		for (int i = 0; i < 5; i++)
+		{
+			if (group[i].age == age)
+			{
+				index = i;
+				return group[index];
+			}
+		}
+		return null;
+	}
+}
+
+
+// Put Person class from last assignment here (Student class is not needed)
+class Person
+{	
+	public String name;
+	public int age;
+	protected boolean isStudent;
+	
+	public Person(String n, int a)
+	{
+		name = n;
+		age = a;
+		isStudent = false;
+	}
+	
+	public void birthday()
+	{
+		age++;
+	}
+
+	public String toString()
+	{
+		String result = "";
+		result += name + " is ";
+		if (isStudent)
+			result += "a student ";
+		else
+			result += "not a student ";
+		result += "and is " + age + " years old";
+		return result;
+	}
+
+}
+
+
+/** Main class - contains entry point */
+// DO NOT MODIFY ANY CODE BELOW
+public class Main {
+  public static void main(String[] args) {
+    // instantiate a new People object
+    People people = new People();
+    
+    // add all person objects
+    boolean addedAllPeople = true;
+    addedAllPeople &= people.addPerson(new Person("Eleanor", 21));
+    addedAllPeople &= people.addPerson(new Person("Tahani", 23));
+    addedAllPeople &= people.addPerson(new Person("Chidi", 25));
+    addedAllPeople &= people.addPerson(new Person("Jason", 27));
+    addedAllPeople &= people.addPerson(new Person("Michael", 29));
+    addedAllPeople &= people.addPerson(new Person("Janet", 31));
+    
+    if (!addedAllPeople) {
+      System.out.println("Not all people were added");
+    }
+    
+    // try to find Chidi
+    Person p = people.findPersonByName("Chidi");
+    if (p != null) {
+      System.out.println("found Chidi who is " + p.age + " years old");
+    }
+    else {
+      System.out.println("couldn't decide where Chidi is");
+    }
+    
+    // try to find someone who is 31 years old
+    p = people.findPersonByAge(31);
+    if (p != null) {
+      System.out.println("found " + p.name + " who is 31 years old");
+    }
+    else {
+      System.out.println("couldn't find anyone who is 31 years old");
+    }
+  }
+}

@@ -1,0 +1,264 @@
+/**
+ * Name: Breno Yamada Riquieri
+ * Date: 2/12/19
+ * Description: Advanced Sorting Algorithms
+*/
+
+import java.util.Random;
+import java.text.DecimalFormat;
+ 
+public class SortAlgs
+{
+	public void cocktailSort(Container[] array)
+	{
+		boolean anySwapsMade;
+		
+		for (int i = 1; i < (array.length - 1) / 2; i++)
+		{
+			// forward direction:
+			anySwapsMade = false;
+			
+			for (int j = i; j <= array.length - i; j++)
+			{
+				if (array[j].getKey() < array[j - 1].getKey())
+				{
+					Container temp = array[j];
+					array[j] = array[j - 1];
+					array[j - 1] = temp;
+					anySwapsMade = true;
+				}
+			}
+			
+			if (anySwapsMade == false)
+				break;
+			
+			// backward direction:
+			
+			anySwapsMade = false;
+			for (int j = array.length - i - 1; j >= i ; j--)
+			{
+				if (array[j].getKey() < array[j - 1].getKey())
+				{
+					Container temp = array[j];
+					array[j] = array[j - 1];
+					array[j - 1] = temp;
+					anySwapsMade = true;
+				}
+			}
+			
+			if (anySwapsMade == false)
+				break;
+		}
+	}
+	
+	public void quicksort(Container[] array)
+	{
+		// I will use first value of the array as the pivot,
+		// the one next to it as the left, and the last value
+		// as the right:
+		quicksortHelper(array, 0, array.length - 1);
+	}
+	
+	/*
+		Helper function for quicksort.
+	*/
+	private void quicksortHelper(Container[] array, int left, int right)
+	{
+		int p;
+		
+		if (left < right)
+		{
+			p = partition(array, left, right);
+			quicksortHelper(array, left, p - 1);
+			quicksortHelper(array, p + 1, right);
+		}
+	}
+	
+	/*
+		Helper function for quick sort.
+	*/
+	private int partition(Container[] array, int left, int right)
+	{
+		// setting pivot as the first value, 
+		// and left as the value next to it:
+		int pivotPos = left;
+		left++;
+		
+		while (true)
+		{
+			while (left < array.length &&
+					array[left].getKey() < array[pivotPos].getKey())
+				left++;
+			
+			while (right >= 0 &&
+					array[right].getKey() > array[pivotPos].getKey())
+				right--;
+			
+			if (left >= right)
+				break;
+			else
+			{
+				Container temp = array[left];
+				array[left] = array[right];
+				array[right] = temp;
+				left++;
+				right--;
+			}
+		}
+		Container temp = array[right];
+		array[right] = array[pivotPos];
+		array[pivotPos] = temp;
+		return right;
+	}
+	
+	public Container[] countingSort(Container[] array)
+	{
+		// STEP 1:
+		// noting the maximun value:
+		int max = array[0].getKey();
+		for (int number = 0; number < array.length; number++)
+		{
+			if (array[number].getKey() > max)
+				max = array[number].getKey();
+		}
+		
+		// STEP 2:
+		// initializing all counts to zero:
+		int[] count = new int[max + 1];
+		for (int i = 0; i < count.length; i++)
+			count[i] = 0;
+		
+		// STEP 3:
+		// counting occurrences of each number:
+		for (int i = 0; i < array.length; i++)
+		{
+			count[array[i].getKey()] += 1;
+		}
+		
+		// STEP 4:
+		// converting frequencies into indices:
+		int total = 0;
+		int oldCount = 0;
+		for (int i = 0; i <= max; i++)
+		{
+			oldCount = count[i];
+			count[i] = total;
+			total += oldCount;
+		}
+		
+		// checking how long the output should be:
+		int val;
+		if (array.length == 20)
+			val = 20;
+		else
+			val = 20000;
+		
+		Container[] output = new Container[val];
+		
+		for (Container number : array)
+		{
+			output[count[number.getKey()]] = number;
+			count[number.getKey()] += 1;
+		}
+		
+		return output;
+	}
+}
+
+public class Main
+{
+	public static void main(String[] args)
+	{
+		
+		/* ----------------------------------------------- */
+		/* ------------------- SORTING ------------------- */
+		/* ----------------------------------------------- */
+
+		Random rand = new Random();
+		SortAlgs ct = new SortAlgs();
+		
+		Container[] array1 = new Container[20];
+		Container[] array2 = new Container[20];
+		Container[] array3 = new Container[20];
+		
+		// assigning random numbers to the arrays:
+		for (int i = 0; i < array1.length; i++)
+		{
+			int value = rand.nextInt(151);
+			array1[i] = new Container(value);
+			array2[i] = new Container(value);
+			array3[i] = new Container(value);
+		}
+		
+		System.out.println("TESTING with n = 20");
+		
+		// printing original list:
+		System.out.print("  Original List: ");
+		for (int i = 0; i < array1.length; i++)
+			System.out.print(array1[i].getKey() + " ");
+		
+		// Cocktail sorting array1:
+		ct.cocktailSort(array1);
+		System.out.print("\n  Cocktail sorted: ");
+		for (int i = 0; i < array1.length; i++)
+			System.out.print(array1[i].getKey() + " ");
+		
+		// Quick sorting array2:
+		ct.quicksort(array2);
+		System.out.print("\n  Quick    sorted: ");
+		for (int i = 0; i < array2.length; i++)
+			System.out.print(array2[i].getKey() + " ");
+		
+		// Count sorting array3:
+		array3 = ct.countingSort(array3);
+		System.out.print("\n  Counting sorted: ");
+		for (int i = 0; i < array3.length; i++)
+			System.out.print(array3[i].getKey() + " ");
+		
+		
+		/* ----------------------------------------------- */
+		/* ------------------- TIMING -------------------- */
+		/* ----------------------------------------------- */
+		
+		DecimalFormat df2 = new DecimalFormat(".##");
+		Container[] bigArray1 = new Container[20000];
+		Container[] bigArray2 = new Container[20000];
+		Container[] bigArray3 = new Container[20000];
+		
+		// assigning random numbers to the arrays:
+		for (int i = 0; i < bigArray1.length; i++)
+		{
+			int value = rand.nextInt(151);
+			bigArray1[i] = new Container(value);
+			bigArray2[i] = new Container(value);
+			bigArray3[i] = new Container(value);
+		}
+		
+		long start;
+		long finish;
+		long cocktailTime, quickTime, countTime;
+		
+		// Time for Cocktail Sort:
+		start = System.nanoTime();
+		ct.cocktailSort(bigArray1);
+		finish = System.nanoTime();
+		cocktailTime = finish - start;
+		
+		// Time for Quick Sort:
+		start = System.nanoTime();
+		ct.quicksort(bigArray2);
+		finish = System.nanoTime();
+		quickTime = finish - start;
+		
+		// Time for Counting Sort:
+		start = System.nanoTime();
+		bigArray3 = ct.countingSort(bigArray3);
+		finish = System.nanoTime();
+		countTime = finish - start;
+		
+		System.out.println("\n\nTIMING with n = 20,000");
+		System.out.print("\n  Cocktail took: " + df2.format(cocktailTime/1000000.0) + " ms");
+		System.out.print("\n  Quick    took: " + df2.format(quickTime/1000000.0) + " ms");
+		System.out.print("\n  Counting took: " + df2.format(countTime/1000000.0) + " ms");
+	}
+}

@@ -1,0 +1,329 @@
+/**
+ * Name: Breno Yamada Riquieri
+ * Date: 2/3/19
+ * Description: Max and Min Heap
+ */
+
+public class MaxHeap
+{
+	private int[] heap;
+	private int index = 0;
+	private int SIZE = 7;
+	
+	public MaxHeap()
+	{
+		heap = new int[SIZE];
+	}
+	
+	public boolean isEmpty()
+	{
+		return index == 0;
+	}
+
+	/*
+		Adds new value to the heap.
+	*/
+	void insert(int key)
+	{
+		// checks if the array is full:
+		if (index == SIZE)
+		{
+			// doubles the array size:
+			SIZE *= 2;
+			int[] newHeap = new int[SIZE];
+			for (int i = 0; i < SIZE / 2; i++)
+			{
+				newHeap[i] = heap[i];
+			}
+			heap = newHeap;
+		}
+		
+		heap[index] = key;
+		index++;
+		// maintaining heap property:
+		maxHeapifyUp();
+	}
+
+	/*
+		First element should be max value
+		if the heap maintains max heap property:
+	*/	
+	public int findMax()
+	{
+		if (index == 0)
+			return -1;
+		else
+			return heap[0];
+	}
+
+	/*
+		Returns and deletes max value in the heap,
+		then heapifies down to maintain heap property.
+	*/	
+	public int extractMax()
+	{
+		if (index == 0)
+			return -1;
+		else
+		{			
+			// save max to return later:
+			int max = heap[0];
+			
+			// swap max with last element:
+			heap[0] = heap[index - 1];
+			heap[index - 1] = max;
+			
+			// remove last element:
+			heap[index - 1] = 0;
+			index--;
+			
+			// maintain max heap property
+			maxHeapifyDown();
+			
+			// return max key:
+			return max;
+		}
+	}
+	
+	/*
+		Fixes violations of the max heap property.
+	*/	
+	public void maxHeapifyUp()
+	{		
+		// heapify up works from the last
+		// element to the first:
+		for (int i = index - 1; i >= 0; i--)
+			maxHeapifyUpRecur(i);
+	}
+	
+	/*
+		Helper function for heapifying up recursively.
+	*/
+	private void maxHeapifyUpRecur(int n)
+	{
+		int parent = (n - 1) / 2;
+
+		if (heap[n] > heap[parent])
+		{
+			// swap keys:
+			int temp = heap[n];
+			heap[n] = heap[parent];
+			heap[parent] = temp;
+			
+			// heapify the parent to check if
+			// any violations were made after swapping:
+			maxHeapifyUpRecur(parent);
+		}
+	}
+
+	/*
+		Fixes max heap from the first to last element.
+	*/	
+	public void maxHeapifyDown()
+	{
+		for (int i = 0; i < index; i++)
+			maxHeapifyDownRecur(i);
+	}
+
+	/*
+		Helper function for heapifying down recursively.
+	*/	
+	private void maxHeapifyDownRecur(int n)
+	{
+		int leftChild = 2 * n + 1;
+		int rightChild = 2 * n + 2;
+		
+		// if left or right children values are bigger
+		// than index, the parent has no children:
+		if (leftChild > index-1 || rightChild > index-1)
+		{
+			return;
+		}
+		else
+		{
+			// either swap parent and left child in case
+			// child is bigger:
+			if (heap[leftChild] > heap[rightChild]
+				&& heap[leftChild] > heap[n])
+				{
+					int temp = heap[leftChild];
+					heap[leftChild] = heap[n];
+					heap[n] = temp;
+				}
+			// or swap parent and right child:
+			else if (heap[leftChild] < heap[rightChild]
+					&& heap[rightChild] > heap[n])
+					{
+						int temp = heap[rightChild];
+						heap[rightChild] = heap[n];
+						heap[n] = temp;
+					}
+		}
+	}
+}
+
+public class MinHeap
+{
+	private int[] heap;
+	private int index = 0;
+	private int SIZE = 7;
+	
+	public MinHeap()
+	{
+		heap = new int[SIZE];
+	}
+	
+	public boolean isEmpty()
+	{
+		return index == 0;
+	}
+
+	/*
+		Adds new value to the heap.
+	*/	
+	void insert(int key)
+	{
+		// checks if the array is full:
+		if (index == SIZE)
+		{
+			// doubles the array size:
+			SIZE *= 2;
+			int[] newHeap = new int[SIZE];
+			for (int i = 0; i < SIZE / 2; i++)
+			{
+				newHeap[i] = heap[i];
+			}
+			heap = newHeap;
+		}
+		
+		heap[index] = key;
+		index++;
+		// maintaining heap property:
+		minHeapifyUp();
+	}
+
+	/*
+		First element should be min value
+		if the heap maintains min heap property:
+	*/
+	public int findMin()
+	{
+		if (index == 0)
+			return -1;
+		else
+			return heap[0];
+	}
+
+	/*
+		Returns and delete min value in the heap,
+		then heapifies down to maintain heap property.
+	*/
+	public int extractMin()
+	{
+		if (index == 0)
+			return -1;
+		else
+		{			
+			// save min to return later:
+			int min = heap[0];
+			
+			// swap min with last element:
+			heap[0] = heap[index - 1];
+			heap[index - 1] = min;
+			
+			// remove last element:
+			heap[index - 1] = 0;
+			index--;
+			
+			// maintain min heap property
+			minHeapifyDown();
+			
+			// return max key:
+			return min;
+		}
+	}
+
+	/*
+		Fixes violations of the min heap property.
+	*/
+	public void minHeapifyUp()
+	{
+		// heapify up works from the last
+		// element to the first:
+		for (int i = index - 1; i >= 0; i--)
+			minHeapifyUpRecur(i);
+	}
+	
+	/*
+		Helper function for heapifying up recursively.
+	*/
+	private void minHeapifyUpRecur(int n)
+	{
+		int parent = (n - 1) / 2;
+		
+		if (heap[n] < heap[parent])
+		{
+			// swap keys:
+			int temp = heap[n];
+			heap[n] = heap[parent];
+			heap[parent] = temp;
+			minHeapifyUpRecur(parent);
+		}
+	}
+
+	/*
+		Fixes min heap from the first to last.
+	*/	
+	public void minHeapifyDown()
+	{
+		for (int i = 0; i < index; i++)
+			minHeapifyDownRecur(i);
+	}	
+
+	/*
+		Helper function for heapifying down recursively.
+	*/
+	private void minHeapifyDownRecur(int n)
+	{
+		int leftChild = 2 * n + 1;
+		int rightChild = 2 * n + 2;
+		
+		// if left or right children values are bigger
+		// than index, the parent has no children:
+		if (leftChild > index-1 || rightChild > index-1)
+		{
+			// except for when we are dealing with the first
+			// element, which might still have a single left child:
+			if (n == 0 && heap[leftChild] != 0
+				&& heap[leftChild] < heap[n])
+			{
+				int temp = heap[leftChild];
+				heap[leftChild] = heap[n];
+				heap[n] = temp;
+			}
+			
+			// else:
+			return;
+		}
+		else
+		{
+			// either swap parent and left child in case
+			// child is smaller:
+			if (heap[leftChild] < heap[rightChild]
+				&& heap[leftChild] < heap[n])
+				{
+					int temp = heap[leftChild];
+					heap[leftChild] = heap[n];
+					heap[n] = temp;
+				}
+			// or swap parent and right child:
+			else if (heap[leftChild] > heap[rightChild]
+					&& heap[rightChild] < heap[n])
+					{
+						int temp = heap[rightChild];
+						heap[rightChild] = heap[n];
+						heap[n] = temp;
+					}
+		}
+	}
+}

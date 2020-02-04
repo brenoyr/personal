@@ -1,0 +1,232 @@
+public class RecursiveBST<T extends Comparable<T>> extends BST<T>
+{
+	protected Node<T> root;
+	
+	public RecursiveBST()
+	{
+		super();
+	}
+
+	public boolean search(T value)
+	{
+		return searchRecur(root, value);
+	}
+	
+	private boolean searchRecur(Node<T> cur, T value)
+	{
+		// end of tree:
+		if (cur == null)
+			return false;
+		
+		// go left:
+		else if (value.compareTo(cur.getData()) < 0)
+			return searchRecur(cur.getLeft(), value);
+		
+		// go right:
+		else if (value.compareTo(cur.getData()) > 0)
+			return searchRecur(cur.getRight(), value);
+		
+		// if value isn't greater or 
+		// less than cur's data, value found:
+		else
+			return true;
+	}
+	
+	public void insert(T value)
+	{
+		insertRecursive(root, value);
+	}
+	
+	private void insertRecursive(Node<T> cur, T value)
+	{
+		if (root == null)
+			root = new Node<T>(value);
+		else
+		{
+			// go left:
+			if (value.compareTo(cur.getData()) < 0)
+			{
+				// if no left child, value will be it:
+				if(cur.getLeft() == null)
+				{
+					cur.setLeft(new Node<T>(value));
+					return;
+				}
+				// else, recurse left:
+				else
+					insertRecursive(cur.getLeft(), value);
+			}
+			// go right:
+			else if (value.compareTo(cur.getData()) > 0)
+			{
+				// if no right child, value will be it:
+				if(cur.getRight() == null)
+				{
+					cur.setRight(new Node<T>(value));
+					return;
+				}
+				// else, recurse right:
+				else
+					insertRecursive(cur.getRight(), value);
+			}
+		}
+	}
+	
+	public void delete(T value)
+	{
+		deleteRecur(root, value);
+	}
+	
+	private Node<T> deleteRecur(Node<T> cur, T value)
+	{
+		if (cur == null)
+			return cur;
+		
+		// first we search for the node.
+		
+		// go left:
+		if (value.compareTo(cur.getData()) < 0)
+			cur.setLeft(deleteRecur(cur.getLeft(), value));
+		
+		// go right:
+		else if (value.compareTo(cur.getData()) > 0)
+			cur.setRight(deleteRecur(cur.getRight(), value));
+		
+		// value found:
+		else
+		{
+			// adjusting pointers:
+			if (cur.getLeft() == null)
+				return cur.getRight();
+			else if (cur.getRight() == null)
+				return cur.getLeft();
+			
+			// finding successor to replace node to be deleted:
+			cur.setData(successor(cur.getRight()));
+			cur.setRight(deleteRecur(cur.getRight(), cur.getData()));
+		}
+		
+		return cur;
+	}
+	
+	// successor is the node found by going
+	// right once, then left as much as you can:
+	private T successor(Node<T> cur)
+	{
+		T value = cur.getData();
+		while (cur.getLeft() != null)
+		{
+			value = cur.getLeft().getData();
+			cur = cur.getLeft();
+		}
+		
+		return value;
+	}
+	
+	/*
+		I got help from a StackOverflow topic
+		on how to get height of tree.
+	*/
+	public int treeHeight()
+	{
+		if (root == null)
+			return 0;
+		else
+		{
+			int h = subtreeHeight(root);
+			return h;
+		}
+	}
+	
+	public int subtreeHeight(Node<T> cur)
+	{
+		// base case returns -1 to cancel the
+		// +1 in the recursive calls, which supports
+		// the claim "height = # of layers - 1:"
+		if (cur == null)
+			return -1;
+		
+		// counts the amount of nodes going left and right:
+		int hLeft = subtreeHeight(cur.getLeft());
+		int hRight = subtreeHeight(cur.getRight());
+		
+		if (hLeft > hRight)
+			return hLeft + 1;
+		else
+			return hRight + 1;
+	}
+	
+	// simply calls private inorderTraversalRecursive method
+	// and sends it the root node to start the inorder traversal	
+	public void inorderTraversal()
+	{
+		inorderTraversalRecursive(root);
+	}
+	
+	// In Order helper funtion to help with recursion
+	private void inorderTraversalRecursive(Node<T> node)
+	{
+		// base case: node == null:
+		if (node == null)
+			return;
+		// visit left trees/nodes first, process node,
+		// then right trees/nodes last (a.k.a. LNR):
+		else
+		{
+			inorderTraversalRecursive(node.getLeft());
+			
+			System.out.print(node.getData() + ", ");
+			
+			inorderTraversalRecursive(node.getRight());
+		}
+	}
+	
+	// simply calls private preorderTraversalRecursive method
+	// and sends it the root node to start the preorder traversal	
+	public void preorderTraversal()
+	{
+		preorderTraversalRecursive(root);
+	}
+	
+	// Pre Order helper function to help with recursion
+	private void preorderTraversalRecursive(Node<T> node)
+	{
+		// base case: node == null:
+		if (node == null)
+			return;
+		// process node, visit left trees/nodes,
+		// then right trees/nodes last (a.k.a. NLR):
+		else
+		{
+			System.out.print(node.getData() + ", ");
+			
+			preorderTraversalRecursive(node.getLeft());
+			
+			preorderTraversalRecursive(node.getRight());
+		}
+	}
+	
+	// simply calls private postorderTraversalRecursive method
+	// and sends it the root node to start the postorder traversal	
+	void postorderTraversal()
+	{
+		postorderTraversalRecursive(root);
+	}
+	
+	// Post Order helper function to help with recursion
+	private void postorderTraversalRecursive(Node<T> node)
+	{
+		if (node == null)
+			return;
+		// visit left trees/nodes, then right trees/nodes
+		// last, then process node (a.k.a. LRN):
+		else
+		{
+			postorderTraversalRecursive(node.getLeft());
+			
+			postorderTraversalRecursive(node.getRight());
+			
+			System.out.print(node.getData() + ", ");
+		}
+	}
+}

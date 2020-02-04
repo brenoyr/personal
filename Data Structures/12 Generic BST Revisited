@@ -1,0 +1,322 @@
+class BST<T extends Comparable<T>>
+{
+    protected Node<T> root;
+    protected Node<T> cur;
+
+    public BST()
+    {
+        root = null;
+    }
+
+    // inserts value into a logical place in the tree
+    public void insert(T value)
+    {
+        Node<T> newNode = new Node<T>(value);
+        cur = root;
+        boolean done = false;
+
+        if (root == null)
+        {
+            root = newNode;
+            cur = root;
+        }
+        else
+        {
+            // keep traversing the tree until new node
+            // is inserted at the appropriate place:
+            while (done == false)
+            {
+                if (value.compareTo(cur.getData()) < 0)
+                {
+                    if (cur.getLeft() == null)
+                    {
+                        cur.setLeft(newNode);
+                        cur.getLeft().setParent(cur);
+                        cur = cur.getLeft();
+                        done = true;
+                    }
+                    else
+                        cur = cur.getLeft();
+                }
+                else if (value.compareTo(cur.getData()) > 0)
+                {
+                    if (cur.getRight() == null)
+                    {
+                        cur.setRight(newNode);
+                        cur.getRight().setParent(cur);
+                        cur = cur.getRight();
+                        done = true;
+                    }
+                    else
+                        cur = cur.getRight();
+                }
+            }
+        }
+    }
+
+    // returns boolean indicating whether the value is found
+    public boolean search(T value)
+    {
+        Node<T> cur = root;
+
+        // works similarly to insert:
+        while (cur != null)
+        {
+            if (value.compareTo(cur.getData()) < 0)
+                cur = cur.getLeft();
+            else if (value.compareTo(cur.getData()) > 0)
+                cur = cur.getRight();
+            else if (value.compareTo(cur.getData()) == 0)
+                return true;
+        }
+        return false;
+    }
+
+    // returns smallest value in tree
+    public T min()
+    {
+        Node<T> cur = root;
+        T minVal = cur.getData();
+
+        // if there's a node to the left,
+        // there's a smaller value:
+        while (cur.getLeft() != null)
+        {
+            cur = cur.getLeft();
+            minVal = cur.getData();
+        }
+        return minVal;
+    }
+
+    // returns largest value in tree
+    public T max()
+    {
+        Node<T> cur = root;
+        T maxVal = cur.getData();
+
+        // if there's a node to the right,
+        // there's a bigger value:
+        while (cur.getRight() != null)
+        {
+            cur = cur.getRight();
+            maxVal = cur.getData();
+        }
+        return maxVal;
+    }
+
+    /*
+        I will use a stack to perform In Order Traversal.
+        This traversal method goes from left-most to
+        right-most node. Therefore, the stack will be
+        great for retrieving and working with the last
+        node pushed, which is the left-most node.
+    */
+    public void inorderTraversal()
+    {
+        // return if there's no tree:
+        if(root == null)
+            return;
+
+        // stack will be used to push/pop
+        // for correct print order:
+        Node<T> cur = root;
+        Stack<Node<T>> stack = new Stack<Node<T>>();
+
+        // while we haven't reached the end
+        // of the tree or stack:
+        while(cur != null || !stack.isEmpty())
+        {
+            // push current node and
+            // its + their left children:
+            while(cur != null)
+            {
+                stack.push(cur);
+                cur = cur.getLeft();
+            }
+
+            // reaching this point means the top
+            // of the stack holds the left-most value:
+            cur = stack.pop();
+            System.out.print(cur.getData() + ", ");
+            cur = cur.getRight();
+        }
+    }
+
+    /*
+        I will use a queue to perform Breadth First.
+        Make current node = root and queue it.
+        Loop this while tree hasn't been fully traversed yet:
+            Dequeue and print it.
+            Queue left child, if it has one.
+            Queue right child, if it has one.
+        That results in queueing nodes in hierarchy levels,
+        ordered from left to right.
+    */
+    public void breadthFirst()
+    {
+        // return if there's no tree:
+        if(root == null)
+            return;
+
+        // LinkedList will work as our queue:
+        Node<T> cur = root;
+        Queue<Node<T>> queue = new Queue<Node<T>>();
+
+        // start with cur in our queue:
+        queue.enqueue(cur);
+
+        // while we haven't reached the end
+        // of the tree or queue:
+        while(cur != null || !queue.isEmpty())
+        {
+            cur = queue.dequeue();
+            System.out.print(cur.getData() + ", ");
+
+            if(cur.getLeft() != null)
+                queue.enqueue(cur.getLeft());
+            if(cur.getRight() != null)
+                queue.enqueue(cur.getRight());
+
+            // exit check for while loop:
+            cur = queue.peekFront();
+        }
+    }
+
+    public void delete(T value)
+    {
+		/*
+			Important to keep track of parent for
+			node pointer swapping. Also important to
+			know if node to be deleted is left or right child.
+			isLeftChild will help with that. If true, we know
+			we'll do the swapping with the parent's left pointer.
+			If false, parent's right pointer.
+		*/
+        cur.setParent(null);
+        cur = root;
+        boolean isLeftChild = false;
+
+        // no tree? return:
+        if (cur == null)
+            return;
+
+        // find node to be deleted:
+        while(cur != null)
+        {
+            // left:
+            if (value.compareTo(cur.getData()) < 0)
+            {
+                cur.setParent(cur);
+                isLeftChild = true;
+                cur = cur.getLeft();
+            }
+            // right:
+            else if (value.compareTo(cur.getData()) > 0)
+            {
+                cur.setParent(cur);
+                isLeftChild = false;
+                cur = cur.getRight();
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        // not in tree? return:
+        if (cur == null)
+            return;
+
+        // delete node:
+        while (true)
+        {
+            // case 0 (no child):
+            if (cur.getLeft() == null && cur.getRight() == null)
+            {
+                if (cur == root)
+                {
+                    root = null;
+                    break;
+                }
+                // if node to be deleted is a left child,
+                // parent's left pointer will be modified:
+                if (isLeftChild)
+                {
+                    cur.getParent().setLeft(null);
+                }
+                // if node to be deleted is a right child,
+                // parent's right pointer will be modified:
+                else
+                {
+                    cur.getParent().setRight(null);
+                }
+                break;
+            }
+
+            // case 1 (1 child):
+            // xor operation tells us it has no more than 1 child:
+            else if (cur.getLeft() == null ^ cur.getRight() == null)
+            {
+                if (cur.getLeft() != null)
+                {
+                    if (cur == root)
+                    {
+                        root = root.getLeft();
+                        break;
+                    }
+                    if (isLeftChild)
+                    {
+                        cur.getParent().setLeft(cur.getLeft());
+                    }
+                    else
+                    {
+                        cur.getParent().setRight(cur.getLeft());
+                    }
+                }
+                else
+                {
+                    if (cur == root)
+                    {
+                        root = root.getRight();
+                        break;
+                    }
+                    if (isLeftChild)
+                    {
+                        cur.getParent().setLeft(cur.getRight());
+                    }
+                    else
+                    {
+                        cur.getParent().setRight(cur.getRight());
+                    }
+                }
+                break;
+            }
+
+            // case 2 (2 children):
+            else
+            {
+                // sucessor method: go right once,
+                // then go left as much as you can:
+                cur.setParent(cur);
+                Node<T> successor = cur.getRight();
+                isLeftChild = false;
+
+                // going left:
+                while (successor.getLeft() != null)
+                {
+                    cur.setParent(successor);
+                    isLeftChild = true;
+                    successor = successor.getLeft();
+                }
+
+                // set sucessor to cur:
+                cur.setData(successor.getData());
+                cur = successor;
+                cur.setData(null);
+                if (cur.getRight() != null)
+                    cur = cur.getRight();
+            }
+        }
+        cur = root;
+    }
+}

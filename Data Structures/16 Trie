@@ -1,0 +1,354 @@
+// Not finished
+
+public class Trie
+{
+    private TrieNode root = new TrieNode('*', false);
+
+    public void insert(String word)
+    {
+        LinkedList children = root.getChildren();
+        TrieNode cur = children.getHead();
+
+
+        for (int i = 0; i < word.length(); i++)
+        {
+            // get letter and set endOfWord to true if
+            // it's the last letter of the word:
+            char c = word.charAt(i);
+            boolean endOfWord = (i == word.length()-1);
+
+            // if there's no child yet,
+            if (cur == null)
+            {
+                // make it head of the list:
+                cur = new TrieNode(c, endOfWord);
+                children.append(cur);
+
+            }
+            // if not == null, then compare to see
+            // if its a sibling or a child of the child:
+            else
+            {
+                // this while loop was written with the intention of checking
+                // all of the child's siblings before creating a new one:
+                while (cur != null)
+                {
+                    // check if matches cur:
+                    if (cur.getC() != c)
+                    {
+                        // create a sibling if it's not a match
+                        // and it doesn't have any more siblings:
+                        if (cur.getNext() == null)
+                        {
+                            // creating new sibling node:
+                            TrieNode newNode = new TrieNode(c, endOfWord);
+                            children.append(newNode);
+
+                            // go to the recently created sibling:
+                            cur = cur.getNext();
+                            break;
+                        }
+                        // check the sibling next, if it has any:
+                        else
+                            cur = cur.getNext();
+                    }
+                    // if the sibling is a match,
+                    // break out the loop and go down:
+                    else
+                        break;
+                }
+            }
+            // go down to the next level::
+            children = cur.getChildren();
+            cur = children.getHead();
+        }
+    }
+
+    public boolean search(String word)
+    {
+        LinkedList children = root.getChildren();
+        TrieNode cur = children.getHead();
+        boolean found = false;
+
+        for (int i = 0; i < word.length(); i++)
+        {
+            char c = word.charAt(i);
+
+            // if c is the last character, c is a node in trie,
+            // and node is actually the end of a word, node is found
+            // and return found = true:
+            if (c == word.charAt(word.length()-1) && c == cur.getC() && cur.isEndOfWord())
+            {
+                found = true;
+                break;
+            }
+
+            // keep checking for matches while we have a current valid node:
+            while (cur != null)
+            {
+                // if c isnt there, see if it's a sibling or if it is the last of the children
+                if (cur.getC() != c)
+                {
+                    // if it's not equal, and there are no other siblings,
+                    // break so method returns found = false:
+                    if (cur.getNext() == null)
+                        break;
+
+                    // if it's not equal, but there's a sibling,
+                    // move cur to the sibling and go back to loop
+                    // and check sibling for a match:
+                    else
+                        cur = cur.getNext();
+                }
+                // if c is a match, break to go down the tree:
+                else
+                    break;
+            }
+
+            // go down the tree:
+            children = cur.getChildren();
+            cur = children.getHead();
+        }
+
+        return found;
+    }
+
+    public void searchAll(String firstChars, int length)
+    {
+        LinkedList children = root.getChildren();
+        TrieNode cur = children.getHead();
+
+		// get to target node:
+        for (int i = 0; i < firstChars.length(); i++)
+        {
+            char c = firstChars.charAt(i);
+
+            // c mismatch:
+            while (cur != null)
+            {
+                if (cur.getC() != c)
+                {
+                    if (cur.getNext() == null)
+                        break;
+                    else
+                        cur = cur.getNext();
+                }
+                // c match:
+                else
+                    break;
+            }
+            children = cur.getChildren();
+            cur = children.getHead();
+        }
+
+        TrieNode t1 = cur;
+        TrieNode t2 = t1;
+        String result = firstChars;
+        while (t1 != null)
+        {
+            int level = 0;
+            while (true)
+            {
+				// the idea behind t2 is to know which node
+				// to go back to, before going back up to parent's next:
+                t2 = null;
+                for (int i = 0; i < length - firstChars.length()-level; i++)
+                {
+                    if (cur != null && cur.getNext() != null)
+                        t2 = cur.getNext();
+
+                    if (cur == null)
+                    {
+                        System.out.println(result + " is Too short");
+                        break;
+                    }
+					
+					// keep ading current node, if valid (!null):
+                    result += cur.getC();
+					
+					// found a valid word when last node is endOfWord
+                    if (cur.isEndOfWord() && result.length() == length)
+                        System.out.print(result + " valid, ");
+
+                    cur = cur.getChildren().getHead();
+                }
+				
+				// reset pointers for next search:
+                cur = t1;
+                result = firstChars + cur.getC();
+                cur = t2;
+                level++;
+                if (t2 == null)
+                    break;
+            }
+			
+			// reset pointers for next search on parent's next:
+            t1 = t1.getNext();
+            t2 = t1;
+            cur = t1;
+            if (cur != null)
+                result = firstChars;
+        }
+    }
+
+	// delete not working!!!
+    public void delete(String word)
+    {
+        System.out.println(word);
+        if (!search(word))
+        {
+            System.out.println("Word not in Trie");
+            return;
+        }
+        else
+        {
+            LinkedList children = root.getChildren();
+            TrieNode cur = children.getHead();
+            boolean end = false;
+            for (int i = 0; i < word.length(); i++)
+            {
+                char c = word.charAt(i);
+                end = (c == word.charAt((word.length()-1)));
+
+                if (cur.isEndOfWord())
+                {
+                    //////////////////////////////
+                }
+
+                while (cur != null)
+                {
+                    if (cur.getC() != c)
+                    {
+                        cur = cur.getNext();
+                    }
+                    // match:
+                    else
+                        break;
+                }
+
+                children = cur.getChildren();
+                cur = children.getHead();
+            }
+            System.out.println(cur.getC());
+            System.out.println(end);
+        }
+    }
+
+    public void printFirstChildren()
+    {
+        LinkedList children = root.getChildren();
+        String result = "";
+        while (children.getSize() != 0)
+        {
+            TrieNode cur = children.getHead();
+            while (cur != null)
+            {
+                result += cur.getC();
+                cur = cur.getNext();
+            }
+            children = children.getHead().getChildren();
+            result += "\n";
+        }
+        System.out.println("Children:\n" + result);
+    }
+}
+
+class TrieNode
+{
+    private char c;
+    private LinkedList children;
+    private TrieNode next;
+    private TrieNode prev;
+    private boolean endOfWord;
+
+    public TrieNode(char c, boolean endOfWord)
+    {
+        this.c = c;
+        this.endOfWord = endOfWord;
+        children = new LinkedList();
+    }
+
+    public void setNext(TrieNode next)
+    {
+        this.next = next;
+    }
+
+    public void setPrev(TrieNode prev)
+    {
+        this.prev = prev;
+    }
+
+    public LinkedList getChildren()
+    {
+        return children;
+    }
+
+    public boolean isEndOfWord()
+    {
+        return endOfWord;
+    }
+
+    public TrieNode getNext()
+    {
+        return next;
+    }
+
+    public TrieNode getPrev()
+    {
+        return prev;
+    }
+
+    public char getC()
+    {
+        return c;
+    }
+
+}
+
+class LinkedList
+{
+    private TrieNode head;
+    private TrieNode tail;
+    private int size = 0;
+
+    public LinkedList()
+    {
+        head = tail = null;
+    }
+
+    public void append(TrieNode newNode)
+    {
+
+        if (head == null)
+            head = newNode;
+        else
+        {
+            newNode.setPrev(tail);
+            newNode.setNext(null);
+            tail.setNext(newNode);
+        }
+        tail = newNode;
+        size++;
+    }
+
+    public TrieNode search(char value) {
+        TrieNode cur = head;
+        while (cur != null) {
+            if (cur.getC() == value) {
+                return cur;
+            }
+            cur = cur.getNext();
+        }
+        return null;
+    }
+
+    public int getSize()
+    {
+        return size;
+    }
+
+    public TrieNode getHead()
+    {
+        return head;
+    }
+}

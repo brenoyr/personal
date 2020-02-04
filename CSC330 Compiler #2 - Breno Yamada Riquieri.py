@@ -4,7 +4,7 @@
 #   A:          Compiler Program #2                     #
 #   Due Date:   7th February, 2020                      #
 #                                                       #
-#   Notes:      Compiles post-mod correctly             #
+#   Notes:                                              #
 #########################################################
 import sys, string
 
@@ -171,12 +171,6 @@ def Interpret():
             if stack[top] == instr.statLinks:
                 pos = instr.value
             top -= 1
-        ########### BEGIN BRENO MOD
-        # adding Copy Top Stack instruction:
-        elif instr.cmd == "CTS":
-            top += 1
-            stack[top] = stack[top-1]
-        ########### END OF BRENO MOD
         if pos == 0:
             break
     print "End PL/0"
@@ -187,13 +181,13 @@ def error(num):
     print
     if num == 1: 
         print >>outfile, "Use = instead of :="
-    elif num == 2: 
+    elif num ==2: 
         print >>outfile, "= must be followed by a number."
-    elif num == 3: 
+    elif num ==3: 
         print >>outfile, "Identifier must be followed by ="
-    elif num == 4: 
+    elif num ==4: 
         print >>outfile, "Const, Var, Procedure must be followed by an identifier."
-    elif num == 5: 
+    elif num ==5: 
         print >>outfile, "Semicolon or comman missing"
     elif num == 6: 
         print >>outfile, "Incorrect symbol after procedure declaration."
@@ -206,7 +200,7 @@ def error(num):
     elif num == 10: 
         print >>outfile, "Semicolon between statements is missing."
     elif num == 11:  
-        print >>outfile, "Undeclared identifier"
+        print >>outfile, "Undeclard identifier"
     elif num == 12:
         print >>outfile, "Assignment to a constant or procedure is not allowed."
     elif num == 13:
@@ -233,7 +227,7 @@ def error(num):
         print >>outfile, "The preceding factor cannot be followed by this symbol."
     elif num == 24:
         print >>outfile, "An expression cannot begin with this symbol."
-    elif num == 25:
+    elif num ==25:
         print >>outfile, "Constant or Number is expected."
     elif num == 26: 
         print >>outfile, "This number is too large."
@@ -467,16 +461,17 @@ def statement(tx, level):
             error(16)
         getsym()
         statement(tx, level)
+        fixJmp(cx1, codeIndx)
 	    ####################### CHANGES STARTING HERE #####################
         if sym == "ELSE":
             cx2 = codeIndx          # save cx2
             gen("JMP", 0, 0)        # JMP 0,0
             fixJmp(cx1, codeIndx)   # fix JPC @ cx1
+
             getsym()
             statement(tx, level)
+
             fixJmp(cx2, codeIndx)   # fix JMP @ cx2
-        else:
-            fixJmp(cx1, codeIndx)
         ####################### CHANGES ENDING HERE #####################
     elif sym == "BEGIN":
         while True:
@@ -509,9 +504,9 @@ def statement(tx, level):
         getsym()
         forFunc(tx, level)
 
-    elif sym == "CASE":
-     	getsym()
-        case(tx, level)
+    # elif sym == "CASE":
+    # 	getsym()
+    #     case(tx, level)
     
     elif sym == "WRITE" or sym == "WRITELN":
         savedSym = sym      # save sym
@@ -522,7 +517,7 @@ def statement(tx, level):
 #--------------EXPRESSION--------------------------------------
 def expression(tx, level):
     global sym;
-    if sym == "plus" or sym == "minus":
+    if sym == "plus" or sym == "minus": 
         addop = sym
         getsym()
         term(tx, level)
@@ -537,9 +532,9 @@ def expression(tx, level):
         term(tx, level)
         
         if(addop == "plus"):
-            gen("OPR", 0, 2)       # add operation
+            gen("OPR", 0, 2)       #add operation
         else:
-            gen("OPR", 0, 3)       # subtract operation  
+            gen("OPR", 0, 3)       #subtract operation  
 #-------------TERM----------------------------------------------------
 def term(tx, level):
     global sym;
@@ -628,22 +623,23 @@ def write(tx, level, savedSym):
     global sym;
 
     if sym != "lparen":
-        error(29)                   # print statement needs left parenthesis
+        error(29)       # print statement needs left parenthesis
     getsym()
 
     while True:
-        expression(tx, level)       # do while loop idea in python
-        gen("OPR", 0, 14)           # OPR 0, W
-        if sym != "comma":          # until no more expressions to print
+        expression(tx, level)      # do while loop idea in python
+        gen("OPR", 0, 14)   # OPR 0, 14
+        if sym != "comma":  # until no more expressions to print
             break
         getsym()
     
     if sym != "rparen":
-        error(22)                   # expects right parenthesis
-    getsym()
+        error(22)       # expects right parenthesis
     
     if savedSym == "WRITELN":
-        gen("OPR", 0, 15)           # OPR 0, WL
+        gen("OPR", 0, 15)   # OPR 0, 15
+
+    getsym()
 
 ####################### FOR #####################
 def forFunc(tx, level):
@@ -669,9 +665,10 @@ def forFunc(tx, level):
     gen("STO", level - table[i].level, table[i].adr)    # STO lev-table[i].level, table[i].adr
 
     if sym != "TO" and sym != "DOWNTO":
-        error(28)       # expects either "to" or "downto"s after first expression
-    savedSym = sym      # save sym
+        error(28)       # expects either "to" or "downto" after first expression
+    savedSym = sym      #save sym
     getsym()
+
 
     expression(tx, level)      # second expression
 
@@ -707,60 +704,57 @@ def forFunc(tx, level):
     fixJmp(cx2, codeIndx)       # fix JPC @ cx2
     gen("INT", 0, -1)           # INT 0, -1
 
-####################### CASE #####################
-def case (tx, level):
+""" ####################### CASE #####################
+def case(tx, level):
+    global sym;
+
     expression(tx, level)
+
     if sym != "OF":
-        error(30)
+        error(30)       # expects "of"
     getsym()
 
-    firstCase = True;
-    while sym == "number" or sym == "ident":
-        gen("CTS", 0, 0)                    # CTS 0, 0
+    # execute loop if sym is a number or identifier:
+    while sym == "number" or sym == "ident":    # works like the loops in expression and term
         if sym == "ident":
             i = position(tx, id)
-            if i == 0:
+            if i==0:                            # checking if the variable has been declared
                 error(11)
-            if table[i].kind != "const":
-                error(25)
-            gen("LIT", 0, table[i].value)   # LIT 0, table[i].value
-        elif sym == "number":
-            gen("LIT", 0, num)              # LIT 0, num
-
-        getsym()
-        gen("OPR", 0, 8)    # OPR 0, =
+            elif table[i].kind != "const":      # checking if the variable is constant
+                error(34)
+        
+        gen("CTS", 0, 0)
+        if sym == "number":
+            ####################################################################################################
+            gen("LIT", 0, )                     # LIT 0, num
+        else:
+            gen("LIT", 0, table[i].value)       # LIT 0, table[i].value
+        
+        gen("OPR", 0, 8)     # OPR 0, =
         cx1 = codeIndx      # save cx1
         gen("JPC", 0, 0)    # JPC 0, 0
 
-        # check colon, call statement, check semicolon:
-        if sym != "colon":
-            error(31)
         getsym()
 
-        print "sym here is: ", sym
+        if sym != "colon":
+            error(31)       # expects ":"
+        getsym()
+
         statement(tx, level)
 
-        if sym != "semicolon":
+        if sym != "semicolon":  # expects ";"
             error(32)
         getsym()
 
-        # check if first case:
-        if firstCase:
-            firstCase = False
-            cx2 = codeIndx
-            gen("JMP", 0, 0)    # JMP 0, 0
-        else:
-            gen("JMP", 0, cx2)  # JMP 0, cx2
-        fixJmp(cx1, codeIndx)   # fix JPC @ cx1
-
+        #IF FIRST CASE????
+    
     if sym != "CEND":
-        error(33)
+        error(33)       # expects "cend"
+    
+    fixJmp(cx2, codeIndx)       # fix JMP @ cx2
+    gen("INT", 0, -1)           # INT 0, -1
     getsym()
-
-    if not firstCase:
-        fixJmp(cx2, codeIndx)
-        gen("INT", 0, -1)
-
+ """
 
 #-------------------MAIN PROGRAM------------------------------------------------------------#
 

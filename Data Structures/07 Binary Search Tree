@@ -1,0 +1,216 @@
+/**
+ * Name: Breno Yamada Riquieri
+ * Date: 1/27/19
+ * Description: Binary Search Trees
+ */
+
+class BST
+{
+	protected Node root;
+	
+	public BST()
+	{
+		root = null;
+	}
+	
+	// inserts value into a logical place in the tree
+	public void insert(int value)
+	{
+		Node newNode = new Node(value);
+		Node cur = root;
+		boolean done = false;
+		
+		if (root == null)
+			root = new Node(value);
+		else
+		{
+			// keep traversing the tree until new node
+			// is inserted at the appropriate place:
+			while (done == false)
+			{
+				if (value < cur.getData())
+				{
+					if (cur.getLeft() == null)
+					{
+						cur.setLeft(newNode);
+						done = true;
+					}
+					else
+						cur = cur.getLeft();
+				}
+				else if (value > cur.getData())
+				{
+					if (cur.getRight() == null)
+					{
+						cur.setRight(newNode);
+						done = true;
+					}
+					else
+						cur = cur.getRight();
+				}
+			}
+		}
+	}
+	
+	// returns boolean indicating whether the value is found
+	public boolean search(int value)
+	{
+		Node cur = root;
+		
+		// works similarly to insert:
+		while (cur != null)
+		{
+			if (value < cur.getData())
+				cur = cur.getLeft();
+			else if (value > cur.getData())
+				cur = cur.getRight();
+			else if (value == cur.getData())
+			{
+				System.out.println(value + " found");
+				return true;
+			}
+		}
+		System.out.println(value + " not found");
+		return false;
+	}
+	
+	// returns smallest value in tree
+	public int min()
+	{
+		Node cur = root;
+		int minVal = cur.getData();
+		
+		// if there's a node to the left,
+		// there's a smaller value:
+		while (cur.getLeft() != null)
+		{
+			cur = cur.getLeft();
+			minVal = cur.getData();
+		}
+		return minVal; 
+	}
+
+	// returns largest value in tree
+	public int max()
+	{
+		Node cur = root;
+		int maxVal = cur.getData();
+		
+		// if there's a node to the right,
+		// there's a bigger value:
+		while (cur.getRight() != null)
+		{
+			cur = cur.getRight();
+			maxVal = cur.getData();
+		}
+		return maxVal; 
+	}
+	
+	// simply calls private inorderTraversalRecursive method
+	// and sends it the root node to start the inorder traversal
+	public void inorderTraversal()
+	{
+		inorderTraversalRecursive(root);
+	}
+	
+	// In Order helper funtion to help with recursion
+	private void inorderTraversalRecursive(Node node)
+	{
+		// base case: node == null:
+		if (node == null)
+			return;
+		// visit left trees/nodes first, process node,
+		// then right trees/nodes last (a.k.a. LNR):
+		else
+		{
+			inorderTraversalRecursive(node.getLeft());
+			
+			System.out.print(node.getData() + ", ");
+			
+			inorderTraversalRecursive(node.getRight());
+		}
+	}
+	
+	// simply calls private preorderTraversalRecursive method
+	// and sends it the root node to start the preorder traversal	
+	public void preorderTraversal()
+	{
+		preorderTraversalRecursive(root);
+	}
+	
+	// Pre Order helper function to help with recursion
+	private void preorderTraversalRecursive(Node node)
+	{
+		// base case: node == null:
+		if (node == null)
+			return;
+		// process node, visit left trees/nodes,
+		// then right trees/nodes last (a.k.a. NLR):
+		else
+		{
+			System.out.print(node.getData() + ", ");
+			
+			preorderTraversalRecursive(node.getLeft());
+			
+			preorderTraversalRecursive(node.getRight());
+		}
+	}
+	
+	// simply calls private postorderTraversalRecursive method
+	// and sends it the root node to start the postorder traversal	
+	void postorderTraversal()
+	{
+		postorderTraversalRecursive(root);
+	}
+	
+	// Post Order helper function to help with recursion
+	private void postorderTraversalRecursive(Node node)
+	{
+		if (node == null)
+			return;
+		// visit left trees/nodes, then right trees/nodes
+		// last, then process node (a.k.a. LRN):
+		else
+		{
+			postorderTraversalRecursive(node.getLeft());
+			
+			postorderTraversalRecursive(node.getRight());
+			
+			System.out.print(node.getData() + ", ");
+		}
+	}
+	
+	public void delete(int value)
+	{
+		if (search(value))
+		{
+			// GETTING NODE TO BE DELETED
+			Node del = root;
+			
+			while (del != null)
+			{
+				if (value < del.getData())
+					del = del.getLeft();
+				else if (value > del.getData())
+					del = del.getRight();
+				else if (value == del.getData())
+					break;
+			}
+			
+			/////////////////////////// 2 CHILDREN ////////////////////////
+			
+			// GETTING SUCCESSOR & PARENT
+			Node successor = del.getRight();
+			Node par = del;
+			
+			while (successor.getLeft() != null)
+			{
+				par = successor;
+				successor = successor.getLeft();
+			}
+			
+		}
+		else
+			return;
+	}
+}

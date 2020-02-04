@@ -1,0 +1,294 @@
+/**
+ * Name: Breno Yamada Riquieri
+ * Date: 2/17/19
+ * Description: Hashing
+*/
+
+public class Dictionary
+{
+	String[] dict;
+	
+	public Dictionary()
+	{
+		dict = new String[8];
+	}
+	
+	/*
+		Hash and insert value into dictionary:
+	*/
+	public void insert(String key)
+	{
+		int attempt = 1;
+		int k = preHash(key);
+		int hashIndex = h(k, attempt);
+		
+		while (dict[hashIndex] != null)
+		{
+			attempt++;
+			if (attempt > 8)
+				break;
+			hashIndex = h(k, attempt);
+		}
+		
+		dict[hashIndex] = key;
+	}
+	
+	private int preHash(String key)
+	{
+		return key.hashCode();
+	}
+	
+	/*
+		Primary hash function, division method:
+	*/
+	private int h1(int k)
+	{
+		return k % 8;
+	}
+	
+	/*
+		Secondary hash function:
+	*/
+	private int h2(int k)
+	{
+		return 3 - (k % 3);
+	}
+	
+	/*
+		Double hashing:
+	*/
+	private int h(int k, int i)
+	{
+		return (h1(k) + (i-1)*h2(k)) % 8;
+	}
+	
+	/*
+		Searches with a similar algorithm as insertion.
+		Returns -1 if value is not found:
+	*/
+	public int search(String key)
+	{
+		int attempt = 1;
+		int k = preHash(key);
+		int hashIndex = h(k, attempt);
+		
+		if (hashIndex < 0)
+			hashIndex = hashIndex - 2*hashIndex;
+		
+		while (dict[hashIndex] != null)
+		{
+			attempt++;
+			if (attempt > 8)
+				break;
+			
+			if (dict[hashIndex] == key)
+				return hashIndex;
+			
+			else
+				hashIndex = h(k, attempt);
+		}
+		return -1;
+	}
+	
+	/*
+		Searches for the key. Returns true and deletes
+		value if found. Returns false if not found.
+	*/
+	public boolean delete(String key)
+	{
+		int k = search(key);
+		if (k == -1)
+			return false;
+		else
+		{
+			dict[k] = "-DELETED-";
+			return true;
+		}
+	}
+	
+	/*
+		Override to return a string representation of the
+		dictionary. Triple underscore for empty buckets:
+	*/
+	public String toString()
+	{
+		String result = "|";
+		for (int i = 0; i < dict.length; i++)
+		{
+			if (dict[i] == null)
+				result += "___";
+			else
+				result += dict[i];
+			result += "|";
+		}
+		return result;
+	}
+}
+
+public class Main
+{
+	public static void main(String[] args)
+	{
+		Dictionary d = new Dictionary();
+		String key;
+		int s;
+		
+		/*
+			Inserting:
+		*/
+		System.out.println("Testing insert method:");
+		System.out.println("Inserting keys: 'cat', 'food', 'taste', 'great'");
+		
+		d.insert("cat");
+		d.insert("food");
+		d.insert("taste");
+		d.insert("great");
+		
+		System.out.print("Resulting Dictionary: " + d);
+
+		/*
+			Searching:
+		*/		
+		System.out.println("\nTesting seach method:");
+		
+		key = "x";
+		s = d.search(key);
+		if (s != -1)
+			System.out.println("'"+key+"'" + " found in bucket " + s);
+		else
+			System.out.println("'"+key+"'" +" not found");
+		
+		key = "cat";
+		s = d.search(key);
+		if (s != -1)
+			System.out.println("'"+key+"'" + " found in bucket " + s);
+		else
+			System.out.println("'"+key+"'" +" not found");
+		
+		key = "food";
+		s = d.search(key);
+		if (s != -1)
+			System.out.println("'"+key+"'" + " found in bucket " + s);
+		else
+			System.out.println("'"+key+"'" +" not found");
+		
+		key = "hotdog";
+		s = d.search(key);
+		if (s != -1)
+			System.out.println("'"+key+"'" + " found in bucket " + s);
+		else
+			System.out.println("'"+key+"'" +" not found");
+		
+		key = "taste";
+		s = d.search(key);
+		if (s != -1)
+			System.out.println("'"+key+"'" + " found in bucket " + s);
+		else
+			System.out.println("'"+key+"'" +" not found");
+		
+		key = "great";
+		s = d.search(key);
+		if (s != -1)
+			System.out.println("'"+key+"'" + " found in bucket " + s);
+		else
+			System.out.println("'"+key+"'" +" not found");
+		
+		key = "y";
+		s = d.search(key);
+		if (s != -1)
+			System.out.println("'"+key+"'" + " found in bucket " + s);
+		else
+			System.out.println("'"+key+"'" +" not found");
+		
+		/*
+			Deleting:
+		*/
+		System.out.println("\nTesting delete method:");
+		
+		key = "cat";
+		if (d.delete(key))
+			System.out.println("'"+key+"'" + " has been deleted");
+		else
+			System.out.println("'"+key+"'" + " can't be deleted");
+		
+		key = "hotdog";
+		if (d.delete(key))
+			System.out.println("'"+key+"'" + " has been deleted");
+		else
+			System.out.println("'"+key+"'" + " can't be deleted");
+		
+		key = "good";
+		if (d.delete(key))
+			System.out.println("'"+key+"'" + " has been deleted");
+		else
+			System.out.println("'"+key+"'" + " can't be deleted");
+		
+		key = "great";
+		if (d.delete(key))
+			System.out.println("'"+key+"'" + " has been deleted");
+		else
+			System.out.println("'"+key+"'" + " can't be deleted");
+		
+		key = "cat";
+		if (d.delete(key))
+			System.out.println("'"+key+"'" + " has been deleted");
+		else
+			System.out.println("'"+key+"'" + " can't be deleted");
+		
+		System.out.println("Resulting Dictionary: " + d);
+		
+		/*
+			Searching again:
+		*/
+		System.out.println("\nTesting seach method:");
+		
+		key = "x";
+		s = d.search(key);
+		if (s != -1)
+			System.out.println("'"+key+"'" + " found in bucket " + s);
+		else
+			System.out.println("'"+key+"'" +" not found");
+		
+		key = "cat";
+		s = d.search(key);
+		if (s != -1)
+			System.out.println("'"+key+"'" + " found in bucket " + s);
+		else
+			System.out.println("'"+key+"'" +" not found");
+		
+		key = "food";
+		s = d.search(key);
+		if (s != -1)
+			System.out.println("'"+key+"'" + " found in bucket " + s);
+		else
+			System.out.println("'"+key+"'" +" not found");
+		
+		key = "hotdog";
+		s = d.search(key);
+		if (s != -1)
+			System.out.println("'"+key+"'" + " found in bucket " + s);
+		else
+			System.out.println("'"+key+"'" +" not found");
+		
+		key = "taste";
+		s = d.search(key);
+		if (s != -1)
+			System.out.println("'"+key+"'" + " found in bucket " + s);
+		else
+			System.out.println("'"+key+"'" +" not found");
+		
+		key = "great";
+		s = d.search(key);
+		if (s != -1)
+			System.out.println("'"+key+"'" + " found in bucket " + s);
+		else
+			System.out.println("'"+key+"'" +" not found");
+		
+		key = "y";
+		s = d.search(key);
+		if (s != -1)
+			System.out.println("'"+key+"'" + " found in bucket " + s);
+		else
+			System.out.println("'"+key+"'" +" not found");
+	}
+}

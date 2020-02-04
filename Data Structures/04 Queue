@@ -1,0 +1,27 @@
+public class Queue
+{
+	private List queue = new List();
+
+	public void enqueue(char value)
+	{
+		queue.prepend(value);
+	}
+	
+	public char dequeue()
+	{
+		Node deq = ((Node)queue.getContainerAt(queue.size()));
+		char value = deq.getData();
+		queue.delete(queue.getContainerAt(queue.size()));
+		return value;
+	}
+	
+	public char peekFront()
+	{
+		return queue.getValueFromContainer(queue.getContainerAt(queue.size()));
+	}
+	
+	public boolean isEmpty()
+	{
+		return queue.size() == 0;
+	}	
+}

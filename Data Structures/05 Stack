@@ -1,0 +1,32 @@
+public class Stack
+{
+	private List stack = new List();
+	int top = 0;
+	
+	public void push(char value)
+	{
+		stack.prepend(value);
+		top++;
+	}
+	
+	public char pop()
+	{
+		Node pop = ((Node)stack.getContainerAt(top));
+		
+		char topValue = pop.getData();
+		stack.delete(stack.getContainerAt(top));
+		top--;
+
+		return topValue;
+	}
+	
+	public char peekTop()
+	{
+		return stack.getValueFromContainer(stack.getContainerAt(top));
+	}
+	
+	public boolean isEmpty()
+	{
+		return top == 0;
+	}
+}

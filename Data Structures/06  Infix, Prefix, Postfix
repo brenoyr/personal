@@ -1,0 +1,430 @@
+/**
+ * Name: Breno Yamada Riquieri
+ * Date: 1/17/19
+ * Description: Infix, prefix, postfix, and bonuses
+ */
+
+import java.util.Scanner;
+import java.lang.Math;
+
+public class Main
+{
+	public static void main(String[] args)
+	{
+		Scanner scanner = new Scanner(System.in);
+		
+		// Prompt user for an infix expression:
+		System.out.print("Enter infix expression: ");
+		String infix = scanner.nextLine();
+		
+		// Check if for every open parenthesis there is
+		// a closing parenthesis before doing any work:
+		if (hasMatchingParens(infix))
+		{
+			System.out.println("Matching Parenthesis: Check");
+			
+			// Send that expression to infixToPostfix method,
+			// and print out the postfix form:
+			String postfix = infixToPostfix(infix);
+			System.out.println("Postfix: " + postfix);
+			
+			// Send postfix form to evalPostfix for evaluation,
+			// and print out the integer result of evaluation:
+			int postResult = evalPostfix(postfix);
+			System.out.println("Result: " + postResult);
+			
+			// Send infix to infixToPrefix method,
+			// and print out the postfix form:
+			String prefix = infixToPrefix(infix);
+			System.out.println("Prefix: " + prefix);
+			
+			// Send prefix to evalPrefix, and print result:
+			int preResult = evalPrefix(prefix);
+			System.out.println("Result: " + preResult);
+			
+		}
+		else
+			System.out.println("Matching Parenthesis: Fail");
+	}
+	
+	public static int getInfixPriority(char c)
+	{
+		int priority = 0;
+		
+		if (c == '(')
+			priority = 4;
+		else if (c == '^')
+			priority = 3;
+		else if (c == '*' || c == '/')
+			priority = 2;
+		else if (c == '+' || c == '-')
+			priority = 1;
+		
+		return priority;
+	}
+	
+	public static int getStackPriority(char c)
+	{
+		int priority = 0;
+		
+		if (c == '^' || c == '*' || c == '/')
+			priority = 2;
+		else if (c == '+' || c == '-')
+			priority = 1;
+		
+		return priority;
+	}
+	private static boolean isOperand(char c)
+	{
+		if (c == '0' || c == '1' || c == '2' || c == '3' ||
+			c == '4' || c == '5' || c == '6' || c == '7' ||
+			c == '8' || c == '9')
+			return true;
+		else
+			return false;
+	}
+	
+	private static int eval(char op, int a, int b)
+	{
+		if (op == '+')
+			return a + b;
+		else if (op == '-')
+			return a - b;
+		else if (op == '*')
+			return a * b;
+		else if (op == '/')
+			return a / b;
+		else if (op == '^')
+			return (int) Math.pow(a, b);
+		else
+			return -1;
+	}
+	
+	private static String infixToPostfix(String infix)
+	{
+		Queue<Character> infixQ = new Queue<Character>();
+		Queue<Character> postfixQ = new Queue<Character>();
+		Stack<Character> operS = new Stack<Character>();
+		String postfix = "";
+		// counter for converting queue back to string in the end:
+		int len = infix.length();
+		
+		// converting infix string to queue:
+		for (int i = 0; i < len; i++)
+		{
+			char c = infix.charAt(i);
+			infixQ.enqueue(c);
+		}
+		
+		do
+		{
+			char token = infixQ.dequeue();
+			
+			// number:
+			if (isOperand(token))
+				postfixQ.enqueue(token);
+			// parenthesis:
+			else if (token == ')')
+			{
+				char op = operS.pop();
+				while (op != '(')
+				{
+					postfixQ.enqueue(op);
+					op = operS.pop();
+				}
+				// decrementing by 2 for both '(' and ')'
+				len -= 2;
+			}
+			// operator:
+			else
+			{
+				if (operS.isEmpty() == false)
+				{
+					char op = operS.peekTop();
+					while (getStackPriority(op) >= getInfixPriority(token))
+					{
+						op = operS.pop();
+						postfixQ.enqueue(op);
+						if (operS.isEmpty() == false)
+							op = operS.peekTop();
+						else
+							break;
+					}
+				}
+				operS.push(token);
+			}
+		} while (infixQ.isEmpty() == false);
+		
+		// flushing what's left in the operand stack into queue:
+		while (operS.isEmpty() == false)
+		{
+			char op = operS.pop();
+			postfixQ.enqueue(op);
+		}
+		
+		// converting postfix queue into a string
+		// using and managing "len" allows the loop
+		// to dequeue postfixQ for the correct amount of times:
+		for (int i = 0; i < len; i++)
+		{
+			char c = postfixQ.dequeue();
+			postfix += c;
+		}
+		
+		return postfix;
+	}
+	
+	private static int evalPostfix(String postfix)
+	{
+		Queue<Character> postfixQ = new Queue<Character>();
+		Stack<Integer> stack = new Stack<Integer>();
+		char c = ' ';
+		char token = ' ';
+		int len = postfix.length();
+		
+		// converting infix string to queue:
+		for (int i = 0; i < len; i++)
+		{
+			c = postfix.charAt(i);
+			postfixQ.enqueue(c);
+		}
+		
+		// do-while loop that evaluates the postfix queue:
+		do
+		{
+			token = postfixQ.dequeue();
+			
+			if (isOperand(token))
+			{
+				// using "(int) token" gives the ASCII number,
+				// so "Character.getNumericValue(token)" is
+				// being used to give the actual numerical value:
+				stack.push(Character.getNumericValue(token));
+			}
+			else
+			{
+				int a = stack.pop();
+				int b = stack.pop();
+				stack.push(eval(token, b, a));
+			}
+			
+		} while (postfixQ.isEmpty() == false);
+		
+		if (stack.isEmpty() == false)
+			return stack.pop();
+		else
+			throw new RuntimeException("Invalid postfix expression");
+	}
+	
+	private static String infixToPrefix(String infix)
+	{
+		Queue<Character> prefixQ = new Queue<Character>();
+		Queue<Character> revQ = new Queue<Character>();
+		Stack<Character> operS = new Stack<Character>();
+		Stack<Character> revS = new Stack<Character>();
+		String rev = "";
+		String prefix = "";
+		int len = infix.length();
+		
+		// creating a reverse string from infix:
+		for (int i = len - 1; i >= 0; i--)
+        {
+            rev += infix.charAt(i);
+        }
+		
+		// converting reverse string to queue:
+		for (int i = 0; i < len; i++)
+		{
+			char c = rev.charAt(i);
+			revQ.enqueue(c);
+		}
+		
+		// replacing '(' with ')' since string is the reverse.
+		// the for loop iterates enough times to dequeue and
+		// enqueue everything back to how it originally was:
+		for (int i = 0; i < len; i++)
+		{
+			char check = revQ.dequeue();
+			if (check == '(')
+				revQ.enqueue(')');
+			else if (check == ')')
+				revQ.enqueue('(');
+			else
+				revQ.enqueue(check);
+		}
+		
+		// work with prefix queue and reverse string
+		// the same way we did with postfix queue
+		// and infix string.
+		do
+		{
+			char token = revQ.dequeue();
+			
+			if (isOperand(token))
+				prefixQ.enqueue(token);
+			else if (token == ')')
+			{
+				char op = operS.pop();
+				while (op != '(')
+				{
+					prefixQ.enqueue(op);
+					op = operS.pop();
+				}
+				len -= 2;
+			}
+			else
+			{
+				if (operS.isEmpty() == false)
+				{
+					char op = operS.peekTop();
+					
+					/*
+					this condition is slightly different from prefix.
+					Instead of "greater or equal than,", we check for
+					"greater than" only. With postfix, we would enqueue
+					operator after the operands, so it's natural to append
+					an operator with the same priority. However, with prefix
+					we need to preppend, so we actually hold on until a
+					op with a greater priority shows up:
+					*/
+					while (getStackPriority(op) > getInfixPriority(token))
+					{
+						op = operS.pop();
+						prefixQ.enqueue(op);
+						if (operS.isEmpty() == false)
+							op = operS.peekTop();
+						else
+							break;
+					}
+				}
+				operS.push(token);
+			}
+		} while (revQ.isEmpty() == false);
+		
+		// flushing what's left in the operand stack into queue:
+		while (operS.isEmpty() == false)
+		{
+			char op = operS.pop();
+			prefixQ.enqueue(op);
+		}
+		
+		// reversing it back using a stack
+		// to obtain final prefix form:
+		for (int i = 0; i < len; i++)
+		{
+			revS.push(prefixQ.dequeue());
+		}
+		for (int i = 0; i < len; i++)
+        {
+            prefix += revS.pop();
+        }
+		
+		return prefix;
+	}
+	
+	private static int evalPrefix(String prefix)
+	{
+		Queue<Character> prefixQ = new Queue<Character>();
+		Stack<Integer> stack = new Stack<Integer>();		
+		char c = ' ';
+		char token = ' ';
+		int len = prefix.length();
+		
+		// this method will use the reverse of the prefix
+		// string in order to evaluate it. 
+		for (int i = len - 1; i >= 0; i--)
+		{
+			c = prefix.charAt(i);
+			prefixQ.enqueue(c);
+		}
+		
+		// now that the reverse is set, the evaluation
+		// process will work similarly to the evalPostfix.
+		// The difference will be in the else statement:
+		do
+		{
+			token = prefixQ.dequeue();
+			
+			if (isOperand(token))
+			{
+				stack.push(Character.getNumericValue(token));
+			}
+			
+			/*
+			since the evaluation is working with the reverse
+			of the prefix string, we inverse the order of
+			operands when the eval function is called.
+			This way the method works with the inverse
+			of the inverse, resulting in the original order:
+			*/
+			else
+			{
+				int a = stack.pop();
+				int b = stack.pop();
+				stack.push(eval(token, a, b));
+			}
+			
+		} while (prefixQ.isEmpty() == false);
+		
+		if (stack.isEmpty() == false)
+			return stack.pop();
+		else
+			throw new RuntimeException("Invalid postfix expression");		
+	}
+	
+	private static boolean hasMatchingParens(String infix)
+	{
+		Stack<Character> s = new Stack<Character>();
+		int len = infix.length();
+		char c = ' ';
+		char d = ' ';
+		
+		// check one character at a time:
+		for (int i = 0; i < len; i++)
+		{
+			c = infix.charAt(i);
+			
+			// if it's opening parenthesis, push to stack:
+			if (c == '(' || c == '[' || c == '{')
+			{
+				s.push(c);
+			}
+			/*
+			if not, we'll check to see if it's closing.
+			In case it is, we check the stack's top and
+			see if the top is the matching opening parenthesis.
+			If they don't match, or if the stack is empty,
+			the expression doesn't have matching marentheses:
+			*/
+			else if (c == ')')
+			{
+				if (s.isEmpty() || s.peekTop() != '(')
+					return false;
+				else
+					s.pop();
+			}
+			else if (c == ']')
+			{
+				if (s.isEmpty() || s.peekTop() != '[')
+					return false;
+				else
+					s.pop();
+			}
+			else if (c == '}')
+			{
+				if (s.isEmpty() || s.peekTop() != '{')
+					return false;
+				else
+					s.pop();
+			}
+		}
+		
+		// at this point, whole expression has been iterated.
+		// If stack is empty, it has matching parenthesis.
+		// If there are leftover in the stack, it doesn't:
+		if (s.isEmpty())
+			return true;
+		else
+			return false;
+	}
+}
