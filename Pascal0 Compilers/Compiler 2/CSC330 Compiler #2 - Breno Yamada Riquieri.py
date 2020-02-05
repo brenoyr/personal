@@ -504,20 +504,156 @@ def statement(tx, level):
     ####################### BEGIN ADDITIONAL FEATURES #####################
     elif sym == "REPEAT":
         getsym()
-        repeat(tx, level)
+        cx = codeIndx           # save cx
+
+        while True:
+            statement(tx, level)
+            if sym != "semicolon":
+                break
+            getsym()
+
+        if sym != "UNTIL":
+            error(27)       # expects "until" reserved word
+        getsym()
+
+        condition(tx, level)
+        gen("JPC", 0, cx)       # JPC 0, cx
 
     elif sym == "FOR":
         getsym()
-        forFunc(tx, level)
+        if sym == "ident":
+            i = position(tx, id)
+            if i==0:                            # checking if the variable has been declared
+                error(11)
+            elif table[i].kind != "variable":   # checking if the variable is not constant
+                error(12)
+
+        if sym != "ident":
+            error(4)        # expects identifier
+        getsym()
+
+        if sym != "becomes":
+            error(13)       # expects "becomes"
+        getsym()
+
+        expression(tx, level)      # first expression
+
+        gen("STO", level - table[i].level, table[i].adr)    # STO lev-table[i].level, table[i].adr
+
+        if sym != "TO" and sym != "DOWNTO":
+            error(28)       # expects either "to" or "downto"s after first expression
+        savedSym = sym      # save sym
+        getsym()
+
+        expression(tx, level)      # second expression
+
+        cx1 = codeIndx
+        gen("CTS", 0, 0)    # CTS 0, 0
+        gen("LOD", level - table[i].level, table[i].adr)    # LOD lev-table[i].level, table[i].adr
+
+        if savedSym == "TO":
+            gen("OPR", 0, 11)       # OPR 0, >=
+        else:   # savedSym == "DOWNTO":
+            gen("OPR", 0, 13)       # OPR 0, <=
+        
+        cx2 = codeIndx          # save cx2
+        gen("JPC", 0, 0)        # JPC 0, 0
+
+        if sym != "DO":
+            error(18)       # expects "do"
+        getsym()
+
+        statement(tx, level)   # finish for loop with statement
+
+        gen("LOD", level - table[i].level, table[i].adr)    # LOD lev-table[i].level, table[i].adr
+        gen("LIT", 0, 1)
+
+        if savedSym == "TO":
+            gen("OPR", 0, 2)       # OPR 0, +
+        else:   # savedSym == "DOWNTO":
+            gen("OPR", 0, 3)       # OPR 0, -
+        
+        gen("STO", level - table[i].level, table[i].adr)    # STO lev-table[i].level, table[i].adr
+
+        gen("JMP", 0, cx1)          # JMP 0, cx1
+        fixJmp(cx2, codeIndx)       # fix JPC @ cx2
+        gen("INT", 0, -1)           # INT 0, -1
 
     elif sym == "CASE":
      	getsym()
-        case(tx, level)
+        expression(tx, level)
+        if sym != "OF":
+            error(30)
+        getsym()
+
+        firstCase = True;
+        while sym == "number" or sym == "ident":
+            gen("CTS", 0, 0)                    # CTS 0, 0
+            if sym == "ident":
+                i = position(tx, id)
+                if i == 0:
+                    error(11)
+                if table[i].kind != "const":
+                    error(25)
+                gen("LIT", 0, table[i].value)   # LIT 0, table[i].value
+            elif sym == "number":
+                gen("LIT", 0, num)              # LIT 0, num
+
+            getsym()
+            gen("OPR", 0, 8)    # OPR 0, =
+            cx1 = codeIndx      # save cx1
+            gen("JPC", 0, 0)    # JPC 0, 0
+
+            # check colon, call statement, check semicolon:
+            if sym != "colon":
+                error(31)
+            getsym()
+
+            print "sym here is: ", sym
+            statement(tx, level)
+
+            if sym != "semicolon":
+                error(32)
+            getsym()
+
+            # check if first case:
+            if firstCase:
+                firstCase = False
+                cx2 = codeIndx
+                gen("JMP", 0, 0)    # JMP 0, 0
+            else:
+                gen("JMP", 0, cx2)  # JMP 0, cx2
+            fixJmp(cx1, codeIndx)   # fix JPC @ cx1
+
+        if sym != "CEND":
+            error(33)
+        getsym()
+
+        if not firstCase:
+            fixJmp(cx2, codeIndx)
+            gen("INT", 0, -1)
+
     
     elif sym == "WRITE" or sym == "WRITELN":
-        savedSym = sym      # save sym
+        savedSym = sym                  # save sym
         getsym()
-        write(tx, level, savedSym)
+        if sym != "lparen":
+            error(29)                   # print statement needs left parenthesis
+        getsym()
+
+        while True:
+            expression(tx, level)       # do while loop idea in python
+            gen("OPR", 0, 14)           # OPR 0, W
+            if sym != "comma":          # until no more expressions to print
+                break
+            getsym()
+        
+        if sym != "rparen":
+            error(22)                   # expects right parenthesis
+        getsym()
+        
+        if savedSym == "WRITELN":
+            gen("OPR", 0, 15)           # OPR 0, WL
     ####################### END ADDITIONAL FEATURES #####################
 
 #--------------EXPRESSION--------------------------------------
@@ -605,163 +741,6 @@ def condition(tx, level):
                 gen("OPR", 0, 12)
             elif temp == "leq":
                 gen("OPR", 0, 13)
-
-####################### REPEAT #####################
-def repeat(tx, level):
-    global sym;
-    cx = codeIndx           # save cx
-
-    while True:
-        statement(tx, level)
-        if sym != "semicolon":
-            break
-        getsym()
-
-    if sym != "UNTIL":
-        error(27)       # expects "until" reserved word
-    getsym()
-
-    condition(tx, level)
-    gen("JPC", 0, cx)       # JPC 0, cx
-
-####################### WRITE and WRITELN #####################
-def write(tx, level, savedSym):
-    global sym;
-
-    if sym != "lparen":
-        error(29)                   # print statement needs left parenthesis
-    getsym()
-
-    while True:
-        expression(tx, level)       # do while loop idea in python
-        gen("OPR", 0, 14)           # OPR 0, W
-        if sym != "comma":          # until no more expressions to print
-            break
-        getsym()
-    
-    if sym != "rparen":
-        error(22)                   # expects right parenthesis
-    getsym()
-    
-    if savedSym == "WRITELN":
-        gen("OPR", 0, 15)           # OPR 0, WL
-
-####################### FOR #####################
-def forFunc(tx, level):
-    global sym;
-
-    if sym == "ident":
-        i = position(tx, id)
-        if i==0:                            # checking if the variable has been declared
-            error(11)
-        elif table[i].kind != "variable":   # checking if the variable is not constant
-            error(12)
-
-    if sym != "ident":
-        error(4)        # expects identifier
-    getsym()
-
-    if sym != "becomes":
-        error(13)       # expects "becomes"
-    getsym()
-
-    expression(tx, level)      # first expression
-
-    gen("STO", level - table[i].level, table[i].adr)    # STO lev-table[i].level, table[i].adr
-
-    if sym != "TO" and sym != "DOWNTO":
-        error(28)       # expects either "to" or "downto"s after first expression
-    savedSym = sym      # save sym
-    getsym()
-
-    expression(tx, level)      # second expression
-
-    cx1 = codeIndx
-    gen("CTS", 0, 0)    # CTS 0, 0
-    gen("LOD", level - table[i].level, table[i].adr)    # LOD lev-table[i].level, table[i].adr
-
-    if savedSym == "TO":
-        gen("OPR", 0, 11)       # OPR 0, >=
-    else:   # savedSym == "DOWNTO":
-        gen("OPR", 0, 13)       # OPR 0, <=
-    
-    cx2 = codeIndx          # save cx2
-    gen("JPC", 0, 0)        # JPC 0, 0
-
-    if sym != "DO":
-        error(18)       # expects "do"
-    getsym()
-
-    statement(tx, level)   # finish for loop with statement
-
-    gen("LOD", level - table[i].level, table[i].adr)    # LOD lev-table[i].level, table[i].adr
-    gen("LIT", 0, 1)
-
-    if savedSym == "TO":
-        gen("OPR", 0, 2)       # OPR 0, +
-    else:   # savedSym == "DOWNTO":
-        gen("OPR", 0, 3)       # OPR 0, -
-    
-    gen("STO", level - table[i].level, table[i].adr)    # STO lev-table[i].level, table[i].adr
-
-    gen("JMP", 0, cx1)          # JMP 0, cx1
-    fixJmp(cx2, codeIndx)       # fix JPC @ cx2
-    gen("INT", 0, -1)           # INT 0, -1
-
-####################### CASE #####################
-def case (tx, level):
-    expression(tx, level)
-    if sym != "OF":
-        error(30)
-    getsym()
-
-    firstCase = True;
-    while sym == "number" or sym == "ident":
-        gen("CTS", 0, 0)                    # CTS 0, 0
-        if sym == "ident":
-            i = position(tx, id)
-            if i == 0:
-                error(11)
-            if table[i].kind != "const":
-                error(25)
-            gen("LIT", 0, table[i].value)   # LIT 0, table[i].value
-        elif sym == "number":
-            gen("LIT", 0, num)              # LIT 0, num
-
-        getsym()
-        gen("OPR", 0, 8)    # OPR 0, =
-        cx1 = codeIndx      # save cx1
-        gen("JPC", 0, 0)    # JPC 0, 0
-
-        # check colon, call statement, check semicolon:
-        if sym != "colon":
-            error(31)
-        getsym()
-
-        print "sym here is: ", sym
-        statement(tx, level)
-
-        if sym != "semicolon":
-            error(32)
-        getsym()
-
-        # check if first case:
-        if firstCase:
-            firstCase = False
-            cx2 = codeIndx
-            gen("JMP", 0, 0)    # JMP 0, 0
-        else:
-            gen("JMP", 0, cx2)  # JMP 0, cx2
-        fixJmp(cx1, codeIndx)   # fix JPC @ cx1
-
-    if sym != "CEND":
-        error(33)
-    getsym()
-
-    if not firstCase:
-        fixJmp(cx2, codeIndx)
-        gen("INT", 0, -1)
-
 
 #-------------------MAIN PROGRAM------------------------------------------------------------#
 
