@@ -171,12 +171,9 @@ def Interpret():
             if stack[top] == instr.statLinks:
                 pos = instr.value
             top -= 1
-        ########### BEGIN BRENO MOD
-        # adding Copy Top Stack instruction:
         elif instr.cmd == "CTS":
             top += 1
             stack[top] = stack[top-1]
-        ########### END OF BRENO MOD
         if pos == 0:
             break
     print "End PL/0"
@@ -237,8 +234,6 @@ def error(num):
         print >>outfile, "Constant or Number is expected."
     elif num == 26: 
         print >>outfile, "This number is too large."
-    ####################### CHANGES STARTING HERE #####################
-    # new error cases:
     elif num == 27:
         print >>outfile, "UNTIL expected after REPEAT."
     elif num == 28:
@@ -255,6 +250,13 @@ def error(num):
         print >>outfile, "Cend expected."
     elif num == 34:
         print >>outfile, "Const expected"
+    ####################### CHANGES STARTING HERE #####################
+    elif num == 35:
+        print >>outfile, "Must be function."
+    elif num == 36:
+        print >>outfile, "Expected variable or function."
+    elif num == 37:
+        print >>outfile, "Wrong context, can't return value here."
     ####################### CHANGES ENDING HERE #####################
 
     exit(0)
@@ -440,20 +442,19 @@ def statement(tx, level, tx0):
         if i==0:
             error(11)
         elif table[i].kind != "variable" and table[i].kind != "function":
-            # see if error(12) still makes sense
-            error(10000000000000000000000) #########################################
-        savekind = table[i].kind
+            error(36)
+        savekind = table[i].kind    # save kind
         getsym()
         if sym != "becomes":
             error(13)
         getsym()
         expression(tx, level)
-        if savekind == "variable":
-            gen("STO", level -table[i].level, table[i].adr)
-        elif i!= tx0:
-            error(10000000000000000000)################################# wrong context, cant return value here
-        else:
-            gen("STO", 0, -1) #############CHECK THIS
+        if savekind == "variable":                              # if kind is variable
+            gen("STO", level - table[i].level, table[i].adr)    # STO lev-table[i].level, table[i].adr
+        elif i!= tx0:                                           # outside its body
+            error(37)                                           # wrong context, cant return value here
+        else:                                                   # if kind is function and in its body
+            gen("STO", 0, -1)                                   # STO 0, -1
     elif sym == "CALL":
         getsym()
         if sym != "ident":
@@ -474,7 +475,6 @@ def statement(tx, level, tx0):
             error(16)
         getsym()
         statement(tx, level)
-	    ####################### CHANGES STARTING HERE #####################
         if sym == "ELSE":
             cx2 = codeIndx          # save cx2
             gen("JMP", 0, 0)        # JMP 0,0
@@ -484,7 +484,6 @@ def statement(tx, level, tx0):
             fixJmp(cx2, codeIndx)   # fix JMP @ cx2
         else:
             fixJmp(cx1, codeIndx)
-        ####################### CHANGES ENDING HERE #####################
     elif sym == "BEGIN":
         while True:
             getsym()
@@ -507,7 +506,6 @@ def statement(tx, level, tx0):
         gen("JMP", 0, cx1)
         fixJmp(cx2, codeIndx)
 
-    ####################### BEGIN ADDITIONAL FEATURES #####################
     elif sym == "REPEAT":
         getsym()
         cx = codeIndx           # save cx
@@ -660,7 +658,6 @@ def statement(tx, level, tx0):
         
         if savedSym == "WRITELN":
             gen("OPR", 0, 15)           # OPR 0, WL
-    ####################### END ADDITIONAL FEATURES #####################
 
 #--------------EXPRESSION--------------------------------------
 def expression(tx, level):
@@ -702,19 +699,19 @@ def factor(tx, level):
         i = position(tx, id)
         if i==0:
             error(11)
-        if table[i].kind == "const":
-            gen("LIT", 0, table[i].value)
-        elif table[i].kind == "variable":
-            gen("LOD", level-table[i].level, table[i].adr)
-        elif table[i].kind == "procedure":
-            error(21)
+        if table[i].kind == "const":                        # if constant
+            gen("LIT", 0, table[i].value)                   # LIT 0, table[i].val
+        elif table[i].kind == "variable":                   # if variable
+            gen("LOD", level - table[i].level, table[i].adr)  # LOD lev-table[i].level, table[i].adr
+        elif table[i].kind == "procedure":                  # if procedure/function
+            error(21)                                       # error!
         getsym()
     elif sym == "number":
         gen("LIT", 0, num)
         getsym()
     elif sym == "lparen":
         getsym()
-        expression(tx, level)
+        generalExpression(tx, level)
         if sym != "rparen":
             error(22)
         getsym()
@@ -726,10 +723,15 @@ def factor(tx, level):
         if i==0:
             error(11)
         if table[i].kind != "function":
-            error(100000000000) #############################################
-        gen(int, 0, 1)
-        gen("CAL", level - table[i].level, table[i].adr)
+            error(35)                                       # must be a function!
+        gen("INT", 0, 1)                                    # INT 0, 1
+        gen("CAL", level - table[i].level, table[i].adr)    # CAL lev-table[i].level, table[i].adr
         getsym()
+    elif sym == "NOT":
+        getsym()
+        factor(tx, level)
+        gen("LIT", 0, 0)    # LIT 0, 0
+        gen("OPR", 0, 8)    # OPR 0, =
     else:
         error(24)
 #-----------generalExpression-------------------------------------------------
@@ -741,9 +743,11 @@ def generalExpression(tx, level):
         gen("OPR", 0, 6)
     else:
         expression(tx, level)
-        if not (sym in ["eql","neq","lss","leq","gtr","geq"]):
-            error(20)
-        else:
+        ####################### CHANGES STARTING HERE #####################
+        # Removed "not" from "sym not in [...]."
+        # This removes the possibility for error(20) because a relational
+        # operator is no longer expected (it can go straight through).
+        if (sym in ["eql","neq","lss","leq","gtr","geq"]):
             temp = sym
             getsym()
             expression(tx, level)
@@ -759,11 +763,10 @@ def generalExpression(tx, level):
                 gen("OPR", 0, 12)
             elif temp == "leq":
                 gen("OPR", 0, 13)
+        ####################### CHANGES ENDING HERE #####################
 
 #-------------------MAIN PROGRAM------------------------------------------------------------#
 
-# I just ordered this alphabetically so I 
-# can find words easily if I need to:
 rword.append('AND')
 rword.append('BEGIN')
 rword.append('CALL')
@@ -777,6 +780,7 @@ rword.append('END')
 rword.append('FOR')
 rword.append('FUNCTION')
 rword.append('IF')
+rword.append('NOT')
 rword.append('ODD')
 rword.append('OF')
 rword.append('OR')
