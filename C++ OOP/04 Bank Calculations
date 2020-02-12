@@ -1,0 +1,106 @@
+// CSC 140-003 Assignment 7 - Breno Yamada Riquieri
+
+#include<iostream>
+#include<iomanip>
+#include<string>
+
+using namespace std;
+
+int main()
+{
+	// We`ll be working with a bank that is closed on weekends
+
+	// The next 2 statements define and initialise the array of days
+	const int WEEKDAYS = 5;
+	string day[WEEKDAYS] = { "Mon", "Tue", "Wed", "Thu", "Fri" };
+
+	// The following arrays will store deposits and withdrawals 
+	// values for a specific day
+	double deposit[WEEKDAYS];
+	double withdraw[WEEKDAYS];
+
+	// Next, variables for calculating totals, averages, and difference
+	double depositTotal = 0;
+	double depositAverage = 0;
+	double withdrawTotal = 0;
+	double withdrawAverage = 0;
+	double difference = 0;
+
+	// Variables that test the user response and the day counter
+	char userResponse;
+	int i = 0;
+
+	do
+	{
+		// User inputs the deposit for that day, and the program
+		// adds it to the totals right after
+		cout << "   Enter total deposits for " << day[i] << ":     ";
+		cin >> deposit[i];
+		depositTotal += deposit[i];
+
+		// User inputs the withdraw for that day, and the program
+		// adds it to the totals right after
+		cout << "Enter total withdrawals for " << day[i] << ":     ";
+		cin >> withdraw[i];
+		withdrawTotal += withdraw[i];
+
+		// Incrementing day counter
+		i++;
+
+		// This if-else statement asks if the user wants to go for another day.
+		// It also tests the day counter so the program can exit the loop
+		// if the arrays become filled.
+		if (i == WEEKDAYS)
+			cout << endl << "No more input accepted." << endl << endl;
+		else
+		{
+			cout << endl << "Another day? (y or n): ";
+			cin >> userResponse;
+			cout << endl;
+		}
+
+	} while (userResponse == 'y' && i < WEEKDAYS);		// Loop conditions
+
+	// Calculating deposit and withdraw averages, as well as the difference
+	// between their totals
+	depositAverage = depositTotal / i;
+	withdrawAverage = withdrawTotal / i;
+	difference = depositTotal - withdrawTotal;
+
+	// Output header
+	cout << setw(24) << "Deposits" << setw(4) << ' ' << "Withdrawals" << endl
+		<< setw(16) << ' ' << setfill('-') << setw(23) << '-' << setfill(' ')
+		<< endl;
+
+	/* 
+		A second index will be compared with the first day counter in order
+		to output the data only from the days worked with in the first loop.
+
+		"This means the output loop must end after processing only those days
+		for which data was entered."
+	*/
+
+	int i2;
+	for (i2 = 0; i2 < i; i2++)
+	{
+		cout << fixed << showpoint << setprecision(2)
+			<< setw(9) << day[i2] << ':' << setw(14) << deposit[i2]
+			<< setw(15) << withdraw[i2] << endl;
+	}
+
+	// Displaying results:
+
+	cout << setw(16) << ' ' << setfill('-') << setw(23) << '-'
+		<< setfill(' ') << endl 
+		
+		<< "   Totals: " << setw(13) << depositTotal
+		<< setw(15)	<< withdrawTotal << endl
+
+		<< "  Average: " << setw(13) << depositAverage << setw(15)
+		<< withdrawAverage << endl << endl
+		
+		<< "Deposits minus Withdrawals: " << difference << endl;
+
+	cout << endl;
+	return 0;
+}
