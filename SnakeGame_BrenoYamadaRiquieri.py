@@ -1,21 +1,21 @@
 from Tkinter import *
 from time import sleep
 from random import randint, choice
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 
 red = 27
 green = 18
 blue = 17
 
-GPIO.setmode(GPIO.BCM)
+# GPIO.setmode(GPIO.BCM)
 
-GPIO.setup(red, GPIO.OUT)
-GPIO.setup(green, GPIO.OUT)
-GPIO.setup(blue, GPIO.OUT)
+# GPIO.setup(red, GPIO.OUT)
+# GPIO.setup(green, GPIO.OUT)
+# GPIO.setup(blue, GPIO.OUT)
 
-GPIO.output(red, False)
-GPIO.output(blue, False)
-GPIO.output(green, False)
+# GPIO.output(red, False)
+# GPIO.output(blue, False)
+# GPIO.output(green, False)
 
 master = Tk()
 
@@ -34,7 +34,7 @@ goingDown = False
 
 def startGame():
     global score
-    GPIO.output(green, True)
+    # GPIO.output(green, True)
 
     # canvas that runs the game:
     w = Canvas(master, width=800, height=440)
@@ -210,10 +210,10 @@ def startGame():
         global score, speed
         
         # blink LED when it eats food:
-        GPIO.output(green, False)
-        sleep(0.1)
-        GPIO.output(green, True)
-        sleep(0.1)
+        # GPIO.output(green, False)
+        # sleep(0.1)
+        # GPIO.output(green, True)
+        # sleep(0.1)
 
         score += 1
         scoreboard.destroy()
@@ -242,12 +242,12 @@ def startGame():
         global score, speed
         
         # blink LED red if it ate poison:
-        GPIO.output(green, False)
-        GPIO.output(red, True)
-        sleep(0.1)
-        GPIO.output(red, False)
-        sleep(0.1)
-        GPIO.output(green, True)
+        # GPIO.output(green, False)
+        # GPIO.output(red, True)
+        # sleep(0.1)
+        # GPIO.output(red, False)
+        # sleep(0.1)
+        # GPIO.output(green, True)
 
         score -= 1        
         scoreboard.destroy()
@@ -282,12 +282,12 @@ def startGame():
     def reset():
         global score, goingDown, goingUp, goingLeft, run
 
-        GPIO.output(green, False)
-        for i in range(0, 2):
-            GPIO.output(red, True)
-            sleep(0.5)
-            GPIO.output(red, False)
-            sleep(0.5)
+        # GPIO.output(green, False)
+        # for i in range(0, 2):
+        #     GPIO.output(red, True)
+        #     sleep(0.5)
+        #     GPIO.output(red, False)
+        #     sleep(0.5)
             
         w.destroy()
         score = 0
@@ -307,7 +307,7 @@ def startGame():
 def stop():
     global run
     run = False   
-    GPIO.cleanup()
+    # GPIO.cleanup()
     master.destroy()
 
 # what's called when 'instructions' is pressed:
