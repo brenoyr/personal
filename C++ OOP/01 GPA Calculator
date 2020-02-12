@@ -1,0 +1,129 @@
+// CSC140-003 - Breno Yamada Riquieri
+
+#include<iostream>
+#include<iomanip>
+using namespace std;
+
+double DetermineGPA(int& totalGradePoints, int& totalCreditHours);
+
+void PrintResults(int& totalGradePoints, int& totalCreditHours, double& gradePointAverage,
+	int& cumulativeCreditHours, int& cumulativeGradePoints,
+	double & cumulativeGPA);
+
+char DetermineGradePoint(char& letterGrade, int& numGrade);
+
+void GetTotals(int& creditHours, int& numGrade, int& totalGradePoints, int& totalCreditHours);
+
+int main()
+{
+	const int CLASSES = 4;
+	int totalGradePoints = 0;
+	int totalCreditHours = 0;
+
+	double gradePointAverage;
+	char letterGrade;
+	int creditHours;
+	int numGrade;
+
+	int cumulativeGradePoints = 0;
+	int cumulativeCreditHours = 0;
+	double cumulativeGPA = 0;
+
+
+	bool keepGoing = true;
+	char userResponse;
+
+	while (keepGoing == true)
+	{
+		int classCounter;
+
+		for (classCounter = 1; classCounter <= CLASSES; classCounter++)
+		{
+			cout << "Enter letter grade for class " << classCounter << ": ";
+			cin >> letterGrade;
+
+			letterGrade = toupper(letterGrade);	// so it accepts lower case input.
+
+			cout << "Enter credit hours for class " << classCounter << ": ";
+			cin >> creditHours;
+			cout << endl;
+
+			DetermineGradePoint(letterGrade, numGrade);
+			GetTotals(creditHours, numGrade, totalGradePoints, totalCreditHours);
+
+			DetermineGPA(totalGradePoints, totalCreditHours);
+			gradePointAverage = DetermineGPA(totalGradePoints, totalCreditHours);
+
+		}
+
+		cumulativeGradePoints += totalGradePoints;
+		cumulativeCreditHours += totalCreditHours;
+		cumulativeGPA = (static_cast<double>(cumulativeGradePoints) / cumulativeCreditHours);
+
+		PrintResults(totalGradePoints, totalCreditHours, gradePointAverage,
+			cumulativeCreditHours, cumulativeGradePoints,
+			cumulativeGPA);
+
+		totalGradePoints = 0;
+		totalCreditHours = 0;
+
+		cout << "Another (y or n)? ";
+		cin >> userResponse;
+
+		if (userResponse == 'n')
+		{
+			keepGoing = false;
+		}
+
+		cout << endl;
+
+	}
+}
+
+double DetermineGPA(int& totalGradePoints, int& totalCreditHours)
+{
+
+	double gradePointAverage;
+
+	gradePointAverage = static_cast<double>(totalGradePoints) / totalCreditHours;
+
+	return gradePointAverage;
+}
+
+void PrintResults(int& totalGradePoints, int& totalCreditHours, double& gradePointAverage,
+	int& cumulativeCreditHours, int& cumulativeGradePoints,
+	double& cumulativeGPA)
+{
+	cout << setw(15) << "Grade Points: " << totalGradePoints << endl
+		<< setw(15) << "Credit Hours: " << totalCreditHours << endl
+		<< setw(15) << "GPA: " << fixed << showpoint << setprecision(3)
+		<< gradePointAverage << endl << endl;
+
+	cout << setw(15) << "Grade Points: " << cumulativeGradePoints << endl
+		<< setw(15) << "Credit Hours: " << cumulativeCreditHours << endl
+		<< setw(15) << "GPA: " << fixed << showpoint << setprecision(3)
+		<< cumulativeGPA << endl << endl;
+}
+
+char DetermineGradePoint(char& letterGrade, int& numGrade)
+{
+	if (letterGrade == 'A')
+		numGrade = 4;
+	else if (letterGrade == 'B')
+		numGrade = 3;
+	else if (letterGrade == 'C')
+		numGrade = 2;
+	else if (letterGrade == 'D')
+		numGrade = 1;
+	else
+		numGrade = 0;
+
+	return numGrade;
+}
+
+void GetTotals(int& creditHours, int& numGrade, int& totalGradePoints, int& totalCreditHours)
+{
+	totalGradePoints += (creditHours * numGrade);
+
+	totalCreditHours += creditHours;
+}
