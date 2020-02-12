@@ -1,0 +1,190 @@
+// CSC140-003 Breno Yamada Riquieri
+
+#include <iostream>
+#include <iomanip>
+
+using namespace std;
+
+int main()
+{
+	// Defining variables:
+	
+	char userResponse;
+	double depositAmount;
+	double totalDeposits;
+	int depositCount;
+	double averageDeposit;
+	bool isValid;			// Boolean for a future flag.
+
+	depositCount = 0;		// Setting accumulators to 0 for loop usage.
+	totalDeposits = 0;
+	
+	// The following loop will prompt and add each deposit amount to the total,
+	// increment the deposit count, and prompt for another deposit.
+
+	do
+	{
+		cout << "Enter deposit amount: ";
+		cin >> depositAmount;
+		
+		// This nested loop is used if user input is a zero or negative value.
+
+		isValid = true;		// Boolean value will serve as a flag.
+		while (isValid == true)
+		{
+			if (depositAmount <= 0)
+			{
+				cout << "Amount cannot be zero or negative." << endl;
+				isValid = false;
+				depositAmount = 0;		// So the invalid input doesn't add to
+				depositCount--;			// the amount, nor the counter.
+			}
+			isValid = false;
+		}
+
+		totalDeposits += depositAmount;
+		depositCount++;					
+		cout << "Another (y or n)? ";
+		cin >> userResponse;
+
+	} while (userResponse == 'y');
+
+	// Calculating average:
+
+	// There's a chance for average deposit being a number divided by zero,
+	// so the following if statement avoids mathematical logic errors.
+
+	if (depositCount != 0)
+		averageDeposit = totalDeposits / depositCount;
+	else
+		averageDeposit = 0;
+													  
+	// Displaying results:
+
+	cout << endl
+		<< setw(20) << ' ' << "Total deposits:" << setw(11) << fixed
+		<< showpoint << setprecision(2) << totalDeposits << endl
+
+		<< setw(16) << ' ' << "Number of deposits:" << setw(8) << noshowpoint
+		<< depositCount << endl
+
+		<< setw(19) << ' ' << "Average deposit:" << setw(11) << showpoint
+		<< setprecision(2) << averageDeposit << endl << endl;
+
+	// Part 2:
+
+	cout << "You want to invest in a new account that automatically " << endl
+		<< "deposits this average amount once each year. The money " << endl
+		<< "earns interest, compounded annually, and you want to know " << endl
+		<< "how much interest will be earned and the final balance." << endl
+		<< endl;
+
+	// Variables for part 2:
+
+	double interestRate;
+	int yearsToInvest;
+	int yearCounter;
+	double annualDeposit;
+	double balance;
+	double amountInvested;
+	double interestEarned;
+
+	balance = 0;
+	annualDeposit = averageDeposit;
+
+	// Prompting user for new annual inputs:
+
+	cout << setw(6) << ' ' << "Enter number of years to invest: ";
+	cin >> yearsToInvest;
+
+	cout << "Enter annual interest rate (e.g. 8.5): ";
+	cin >> interestRate;
+
+	interestRate /= 100;	// Divide by 100 to work as percentage.
+
+	// The following loop calculates the final balance through
+	// years to invest:
+
+	cout << endl
+		<< setw(31) << ' ' << "Annual Table" << endl
+		<< setw(31) << ' ' << setfill('-') << setw(12) << '-' << setfill(' ')
+		<< endl;
+
+	for (yearCounter = 1; yearCounter <= yearsToInvest; yearCounter++)
+	{
+		balance += annualDeposit;
+		balance += (balance * interestRate);
+		
+		cout << setw(27) << ' ' << "Year " << setw(2) << yearCounter << ':'
+			<< setw(11) << balance << endl;
+	}
+
+	// Calculating the rest of the results:
+
+	amountInvested = annualDeposit * yearsToInvest;
+	interestEarned = balance - amountInvested;
+
+	// Displaying formatted results:
+
+	cout << endl
+		<< setw(10) << ' ' << "Number of years invested:" << setw(8)
+		<< yearsToInvest << endl
+
+		<< setw(21) << ' ' << "Interest Rate:" << setw(12) << showpoint
+		<< setprecision(3) << interestRate << endl
+
+		<< setw(19) << ' ' << "Amount Invested:" << setw(11) << setprecision(2)
+		<< amountInvested << endl
+
+		<< setw(19) << ' ' << "Interest Earned:" << setw(11) << interestEarned
+		<< endl
+
+		<< setw(21) << ' ' << "Final Balance:" << setw(11) << balance << endl;
+
+	// Recommended improvement 2:
+
+	cout << endl
+		<< "You've decide to reinvest this final balance in a new account, "
+		<< endl << "where no additional deposits are made. The money simply "
+		<< endl << "earns interest, compounded annually, and you want to know "
+		<< endl << "how many years it will take to double the amount at some"
+		<< endl << "interest rate." << endl << endl
+
+		<< "Enter the interest rate: ";
+
+	cin >> interestRate;
+	interestRate /= 100;		// So interest rate is a percentage.
+
+	/* 
+		Some new variables are defined in order to proceed correctly with
+		the while loop. 
+		doubleBalance is used to set the value of balance amount times two.
+		yearsToDouble is the amount of years it would take to double balance.
+	*/
+
+	int yearsToDouble;
+	double doubleBalance;
+
+	yearsToDouble = 0;
+	doubleBalance = (2 * balance);
+
+	cout << endl
+		<< setw(31) << ' ' << "Annual Table" << endl
+		<< setw(31) << ' ' << setfill('-') << setw(12) << '-' << setfill(' ')
+		<< endl;
+
+	while (balance < doubleBalance)
+	{
+		balance += (interestRate * balance);
+		yearsToDouble++;
+		
+		cout << setw(27) << ' ' << "Year " << setw(2) << yearsToDouble << ':'
+			<< setw(11) << balance << endl;
+	}
+
+	cout << endl
+		<< "At the end of " << yearsToDouble << " year(s), this account's "
+		<< "balance will be " << balance << " dollars." << endl << endl;
+	
+	return 0;
+}
