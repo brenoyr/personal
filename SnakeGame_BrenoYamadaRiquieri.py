@@ -3,9 +3,9 @@ from time import sleep
 from random import randint, choice
 # import RPi.GPIO as GPIO
 
-red = 27
-green = 18
-blue = 17
+# red = 27
+# green = 18
+# blue = 17
 
 # GPIO.setmode(GPIO.BCM)
 
