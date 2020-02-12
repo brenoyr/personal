@@ -1,0 +1,289 @@
+// Breno Yamada Riquieri - CSC240-001 Assignment 4
+
+//******************************************************************
+// Merge Sort Program
+// This program merges two unsorted files into one sorted file.
+//
+// Assumption:  Input files are not empty and do not contain
+// more than SIZE values.
+//******************************************************************
+
+/*
+	CSC 240 Assignment 4
+
+	Student's name: Breno Yamada Riquieri
+*/
+
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <iomanip>
+using namespace std;
+
+const int SIZE = 100;
+
+// Function Prototypes
+
+int InputGrades(ifstream& inData, int grades[], const int size);
+void SortGrades(int grades[], const int listLength);
+
+// file name constants
+// A has 18 scores, with duplicates, includes 0 and 100
+// B has 22 scores, with duplicatess, includes 0 and 100's
+const string FILE_A = "TestScoresA.txt";
+const string FILE_B = "TestScoresB.txt";
+const string FILE_AB = "TestScoresMergeAB.txt";
+
+// other test data sets...
+
+// A1 has 10 scores, 1-10
+// B1 has 10 scores, 11-20
+const string FILE_A1 = "TestScoresA1.txt";
+const string FILE_B1 = "TestScoresB1.txt";
+const string FILE_AB1 = "TestScoresMergeAB1.txt";
+
+// A2 has 10 scores, odds 1-19
+// B2 has 10 scores, evens 2-20
+const string FILE_A2 = "TestScoresA2.txt";
+const string FILE_B2 = "TestScoresB2.txt";
+const string FILE_AB2 = "TestScoresMergeAB2.txt";
+
+// A3 has 5 scores, 1-5
+// B3 has 10 scores, 6-15
+const string FILE_A3 = "TestScoresA3.txt";
+const string FILE_B3 = "TestScoresB3.txt";
+const string FILE_AB3 = "TestScoresMergeAB3.txt";
+
+// A4 has 5 scores, 1-5
+// B4 has 10 scores, 1-10
+const string FILE_A4 = "TestScoresA4.txt";
+const string FILE_B4 = "TestScoresB4.txt";
+const string FILE_AB4 = "TestScoresMergeAB4.txt";
+
+//------------------------------------------------------------------------------
+
+int main()
+{
+	int gradesA[SIZE];         // A list of grades
+	int gradesB[SIZE];         // A list of grades
+
+    // Declare and open files
+    ifstream inDataA;
+    ifstream inDataB;
+    ofstream outData;
+
+    cout << "\nOpening files....";
+
+    inDataA.open(FILE_A);                   // open input file A
+    inDataB.open(FILE_B);                   // open input file B
+    outData.open(FILE_AB);                  // open output file AB
+
+    if ( !inDataA || !inDataB || !outData )
+    {
+        cout << "\nOne or more files did not open successfully." << endl;
+        return 1;
+    }
+
+    cout << "\nReading input files into lists....";
+
+    // Read unsorted file data into lists
+	const int LENGTH_A = InputGrades(inDataA, gradesA, SIZE);  // read file A into list A
+	const int LENGTH_B = InputGrades(inDataB, gradesB, SIZE);  // read file B into list B
+
+    cout << "\nClosing input files....";
+
+    inDataA.close();                                        // close input files
+    inDataB.close();
+
+	// Sort each list separtely
+	SortGrades(gradesA, LENGTH_A);
+	SortGrades(gradesB, LENGTH_B);
+
+    // Prepare loop counters
+    int countA = 0;                                         // set list A counter
+    int countB = 0;                                         // set list B counter
+
+    // Merge sorted lists into sorted output file
+
+    cout << "\nMerging sorted lists into output file....";
+
+    // NOTE: Assumes both files are NOT empty
+
+	while ((countA < LENGTH_A) && (countB < LENGTH_B))
+	{
+		if (gradesA[countA] <= gradesB[countB])
+		{
+			outData << gradesA[countA] << endl;
+			countA++;
+		}
+		else
+		{
+			outData << gradesB[countB] << endl;
+			countB++;
+		}
+	}
+
+
+
+
+    cout << "\nFinishing up merge....";
+
+	if (countA <= LENGTH_A)
+		while (countB < LENGTH_B)
+		{
+			outData << gradesB[countB] << endl;
+			countB++;
+		}
+	// the following "else" means that the B list is completed;
+	// there`s no need to write explicit code for that.
+	else
+		while (countA < LENGTH_A)
+		{
+			outData << gradesA[countA] << endl;
+			countA++;
+		}
+
+
+    cout << "\nClosing merged output file....";
+    outData.close();                                // close merged output file
+
+	//		print sorted lists of input data side-by-side
+
+	countA = 0;
+	countB = 0;
+
+	cout << endl << endl
+		<< setw(9) << ' ' << "ListA" 
+		<< setw(24) << ' ' << "ListB"
+		<< endl;
+
+	cout << setw(9) << ' ' << "-----"
+		<< setw(24) << ' ' << "-----"
+		<< endl;
+	
+	while ((countA < LENGTH_A) && (countB < LENGTH_B))
+	{
+		cout << setw(14) << gradesA[countA] << setw(29) << gradesB[countB]
+			<< endl;
+		
+		countA++;
+		countB++;
+	}
+
+	if (countA <= LENGTH_A)
+		while (countB < LENGTH_B)
+		{
+			cout << setw(43) << gradesB[countB] << endl;
+			countB++;
+		}
+	else
+		while (countA < LENGTH_A)
+		{
+			cout << setw(14) << gradesA[countA] << endl;
+			countA++;
+		}
+
+
+
+    cout << "\nEnd program." << endl;
+
+    return 0;
+}
+
+
+//*****************************************************************
+
+// InputGrades function...
+// Grades are input from file inData and inserted into grades.
+// Precondition:
+//     File is open and not empty
+// Postcondition:
+//     Each grade in the file has been inserted into list of grades
+
+
+int InputGrades(ifstream& inData, int grades[], const int size) // Input file
+{
+    int nextGrade;
+
+    // Read first grade
+	inData >> nextGrade;
+
+	int i = 0;
+    while (inData && i < size)
+    {
+		grades[i] = nextGrade;	// store it in array
+		i++;
+
+		inData >> nextGrade;	// read next grade or EOF
+    }
+
+	return i;
+}
+
+//*****************************************************************
+
+void SortGrades(int grades[], const int listLength) // Selection Sort
+{
+	int startScan, minIndex, minValue;
+
+	for (startScan = 0; startScan < (listLength - 1); startScan++)
+	{
+		minIndex = startScan;
+		minValue = grades[startScan];
+
+		for (int index = startScan + 1; index < listLength; index++)
+		{
+			if (grades[index] < minValue)
+			{
+				minValue = grades[index];
+				minIndex = index;
+			}
+		}
+
+		grades[minIndex] = grades[startScan];
+		grades[startScan] = minValue;
+	}
+}
+
+/* Screen and file interaction
+
+
+Opening files....
+Reading input files into sorted lists....
+Closing input files....
+Merging sorted lists into output file....
+Finishing up merge....
+Closing merged output file....
+
+Optional recommended improvement...
+Printing sorted lists to standard output...
+
+     ListA     ListB
+     -----     -----
+         0         0
+        34        15
+        44        34
+        55        35
+        56        44
+        66        55
+        75        66
+        75        67
+        78        75
+        80        75
+        80        80
+        87        80
+        87        83
+        88        87
+        88        88
+        90        90
+        99        90
+       100        91
+                  98
+                  99
+                 100
+                 100
+
+End program.
+Press any key to continue . . .
+
+*/
