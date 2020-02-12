@@ -702,7 +702,7 @@ def factor(tx, level):
         if table[i].kind == "const":                        # if constant
             gen("LIT", 0, table[i].value)                   # LIT 0, table[i].val
         elif table[i].kind == "variable":                   # if variable
-            gen("LOD", level - table[i].level, table[i].adr)  # LOD lev-table[i].level, table[i].adr
+            gen("LOD", level - table[i].level, table[i].adr)# LOD lev-table[i].level, table[i].adr
         elif table[i].kind == "procedure":                  # if procedure/function
             error(21)                                       # error!
         getsym()
