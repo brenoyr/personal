@@ -1,0 +1,208 @@
+// Breno Yamada Riquieri - CSC140-003
+
+#include<iostream>
+#include<iomanip>
+#include<string>
+
+using namespace std;
+
+void PrintList(string candidate[], int votes[], int count);
+int TotalVotes(int votes[], int count);
+int IndexOfWinner(int votes[], int count);
+int InputVotes(string candidate[], int votes[], const int SIZE);
+
+int main()
+{
+	// Const number of array elements, followed by array definitions.
+	const int SIZE = 5;
+	string candidate[SIZE] = { "Johnson", "Miller", "Doddy",
+								"Maxwell", "Bishop" };
+	int votes[SIZE];
+	int count;			// Count variable used by other functions.
+
+	count = InputVotes(candidate, votes, SIZE);	// Function that assigns count,
+												// and inputs values in votes[]
+
+	PrintList(candidate, votes, count);		// Function that prints results.
+	
+	// This cout statement calls a function, IndexOfWinner, to find which
+	// candidate received more votes.
+	cout << "The WINNER is: " << candidate[IndexOfWinner(votes, count)]
+		 << endl << endl;
+
+	return 0;
+}
+
+/* InputVotes Function:
+
+Parameters:
+
+votes[]:		It will receive the amount of votes for each candidate.
+candidate[]:	Has the string values/names of the candidates.
+SIZE:			Constant value used as a subscript for the size of the arrays.
+
+Precondition:
+
+votes[] must have been defined.
+candidate[] must have been initialized with the string values/names.
+SIZE must have been defined and initialized.
+
+Postcondition:
+
+This function will have returned index, and have values for votes[].
+
+*/
+int InputVotes(string candidate[], int votes[], const int SIZE)
+{
+	char userResponse;
+	int index = 0;
+
+	do
+	{
+		cout << "Enter number of votes for " << candidate[index] << ": ";
+
+		cin >> votes[index];
+
+		// The following if-else statement ignores vote input in case it`s < 0
+		if (votes[index] < 0)
+		{
+			cout << "Votes received cannot be negative." << endl;
+		}
+		else
+			index++;
+
+		// This if-else statement evaluates count. If it`s still < SIZE,
+		// it will ask if the user wants another input, otherwise it will
+		// inform the user that there was input for all candidates.
+		if (index < SIZE)
+		{
+			cout << "Another (y or n): ";
+
+			cin >> userResponse;
+		}
+		else
+			cout << endl << "That's all the candidates." << endl;
+
+	} while ((userResponse == 'y') && (index < SIZE));
+
+	return index;
+}
+
+/* PrintList Function:
+
+Parameters:
+
+candidate[]:	cadidates names
+votes[]:		votes for each candidate
+count:			how many candidates received 0 or more votes
+
+Precondition:
+
+candidates[] must have been initialized. 
+votes[] must have the amount of votes each candidate received.
+count must have the amount of candidates participating.
+
+Postcondition:
+
+List of candidates, votes, and percentage of votes for each will be printed.
+
+*/
+void PrintList(string candidate[], int votes[], int count)
+{
+	// Initializing a new variable to hold the number of total votes.
+	// Next, we call the TotalVotes function to assign a value to totalVotes.
+	int totalVotes;
+	totalVotes = TotalVotes(votes, count);
+
+	// List Header:
+	cout << endl << setw(9) << "Candidate" << setw(13) << "Votes"
+		 << setw(15) << "% of Total" << endl
+		 << setfill('-') << setw(9) << '-' << "        "
+		 << setw(5) << '-' << "     " << setw(10) << '-'
+		 << setfill(' ') << endl;
+
+	// Variable and loop for the percentage of votes each candidate received.
+	double percentage = 0;
+	for (int i = 0; i < count; i++)
+	{
+		// Type Cast required for int/int = double.
+		percentage = static_cast<double>(votes[i]) / totalVotes * 100;
+
+		cout << showpoint << fixed << setprecision(2) 
+			 << setw(9) << candidate[i] << setw(13) << votes[i]
+			 << setw(15) << percentage << '%' << endl;
+	}
+
+	// Lines that will "close" the results block.
+	cout << setfill('-') << setw(9) << '-' << "        "
+		<< setw(5) << '-' << "     " << setw(10) << '-'
+		<< setfill(' ') << endl;
+
+	// Printing total votes under the "votes" column.
+	cout << setw(22) << totalVotes << endl << endl;
+}
+
+/* TotalVotes Function:
+
+Parameters:
+
+votes[]:		votes for each candidate.
+count:			how many candidates received 0 or more votes.
+
+Precondition:
+
+votes[] must have the amount of votes each candidate received.
+count must have the amount of candidates participating.
+
+Postcondition:
+
+Total amount of votes will be returned.
+
+*/
+int TotalVotes(int votes[], int count)
+{
+	int total = 0;
+	
+	// For-loop that will increment total with the values inside votes[].
+	for (int i = 0; i < count; i++)
+	{
+		total += votes[i];
+	}
+
+	return total;
+}
+
+/* IndexOfWinner Function:
+
+Parameters:
+
+votes[]:		votes for each candidate.
+count:			how many candidates received 0 or more votes.
+
+Precondition:
+
+votes[] must have the amount of votes each candidate received.
+count must have the amount of candidates participating.
+
+Postcondition:
+
+The index/subscript of the winner will be returned.
+
+*/
+int IndexOfWinner(int votes[], int count)
+{
+	int indexOfWinner = 0;
+
+	// For-loop that will go through votes[] and find which candidate
+	// has the most votes. It will then replace indexOfWinner if it comes
+	// across a candidate with more votes than the current winner.
+	for (int i = 1; i < count; i++)
+	{
+		if (votes[i] > votes[indexOfWinner])
+		{
+			indexOfWinner = i;
+		}
+	}
+
+	return indexOfWinner;
+}
