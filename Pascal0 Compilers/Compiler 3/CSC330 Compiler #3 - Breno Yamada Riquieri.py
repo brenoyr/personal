@@ -355,6 +355,8 @@ def enter(tx, k, level, dx):
         dx += 1
     elif k == "procedure":
         x = tableValue(id, k, level, dx, "NULL")
+    elif k == "function":
+        x = tableValue(id, k, level, dx, "NULL")
     table.append(x)
     return dx
 #--------------CONST DECLARATION---------------------------
@@ -410,13 +412,19 @@ def block(tableIndex, level):
             if sym != "semicolon":
                 error(10)
             getsym()
-        while sym == "PROCEDURE":
+        ################################### START BRENO MODS #########################
+        while sym == "PROCEDURE" or sym == "FUNCTION":
+            savedSym = sym   # save sym
             getsym()
             if sym == "ident":
-                enter(tx, "procedure", level, codeIndx)
+                if savedSym == "PROCEDURE":
+                    enter(tx, "procedure", level, codeIndx)
+                elif savedSym == "FUNCTION":
+                    enter(tx, "function", level, codeIndx)
                 getsym()
             else:
                 error(4)
+
             if sym != "semicolon":
                 error(10)
             getsym()
@@ -425,6 +433,7 @@ def block(tableIndex, level):
             if sym != "semicolon":
                 error(10)
             getsym()
+        ################################### END BRENO MODS #########################
     fixJmp(cx1, codeIndx)
     if tx0 != 0:
         table[tx0].adr = codeIndx
@@ -671,25 +680,25 @@ def expression(tx, level):
     else:
         term(tx, level)
     
-    while sym == "plus" or sym == "minus": ############################MODIFY HERE FOR "OR"
+    while sym == "plus" or sym == "minus" or sym == "OR": ############################MODIFY HERE FOR "OR"
         addop = sym
         getsym()
         term(tx, level)
         
-        if(addop == "plus"):
-            gen("OPR", 0, 2)       # add operation
+        if(addop == "plus" or addop == "OR"):
+            gen("OPR", 0, 2)       # add and "or" operation
         else:
             gen("OPR", 0, 3)       # subtract operation  
 #-------------TERM----------------------------------------------------
 def term(tx, level):
     global sym;
     factor(tx, level)
-    while sym=="times" or sym=="slash": #############################MODIFY HERE FOR "AND"
+    while sym=="times" or sym=="slash" or sym=="AND": #############################MODIFY HERE FOR "AND"
         mulop = sym
         getsym()
         factor(tx, level)
-        if mulop == "times":
-            gen("OPR", 0, 4)         #multiply operation
+        if mulop == "times" or mulop == "AND":
+            gen("OPR", 0, 4)         #multiply and "and" operation
         else:
             gen("OPR", 0, 5)         #divide operation
 #-------------FACTOR--------------------------------------------------
