@@ -2,13 +2,14 @@
 #   Name:       Breno Yamada Riquieri                   #
 #   Class:      CSC330 - Programming Languages          #
 #   A:          Compiler Program #3                     #
-#   Due Date:   
+#   Due Date:   2/21/2020                               #
 #                                                       #
-#   Notes:      
+#   Notes:      compiles test1 & test 2 successfully    #
+#               catches error case correctly            #
 #########################################################
 import sys, string
 
-norw = 22      #number of reserved words
+norw = 26      #number of reserved words
 txmax = 100   #length of identifier table
 nmax = 14      #max number of digits in number
 al = 10          #length of identifiers
@@ -256,7 +257,7 @@ def error(num):
     elif num == 36:
         print >>outfile, "Expected variable or function."
     elif num == 37:
-        print >>outfile, "Wrong context, can't return value here."
+        print >>outfile, "Can't assign to this function here."
     ####################### CHANGES ENDING HERE #####################
 
     exit(0)
@@ -461,7 +462,7 @@ def statement(tx, level, tx0):
         if savekind == "variable":                              # if kind is variable
             gen("STO", level - table[i].level, table[i].adr)    # STO lev-table[i].level, table[i].adr
         elif i!= tx0:                                           # outside its body
-            error(37)                                           # wrong context, cant return value here
+            error(37)                                           # can't assign to this function here
         else:                                                   # if kind is function and in its body
             gen("STO", 0, -1)                                   # STO 0, -1
     elif sym == "CALL":
@@ -483,20 +484,20 @@ def statement(tx, level, tx0):
         if sym != "THEN":
             error(16)
         getsym()
-        statement(tx, level)
+        statement(tx, level, tx0)
         if sym == "ELSE":
             cx2 = codeIndx          # save cx2
             gen("JMP", 0, 0)        # JMP 0,0
             fixJmp(cx1, codeIndx)   # fix JPC @ cx1
             getsym()
-            statement(tx, level)
+            statement(tx, level, tx0)
             fixJmp(cx2, codeIndx)   # fix JMP @ cx2
         else:
             fixJmp(cx1, codeIndx)
     elif sym == "BEGIN":
         while True:
             getsym()
-            statement(tx, level)
+            statement(tx, level, tx0)
             if sym != "semicolon":
                 break
         if sym != "END":
@@ -511,7 +512,7 @@ def statement(tx, level, tx0):
         if sym != "DO":
             error(18)
         getsym()
-        statement(tx, level)
+        statement(tx, level, tx0)
         gen("JMP", 0, cx1)
         fixJmp(cx2, codeIndx)
 
@@ -520,7 +521,7 @@ def statement(tx, level, tx0):
         cx = codeIndx           # save cx
 
         while True:
-            statement(tx, level)
+            statement(tx, level, tx0)
             if sym != "semicolon":
                 break
             getsym()
@@ -576,7 +577,7 @@ def statement(tx, level, tx0):
             error(18)       # expects "do"
         getsym()
 
-        statement(tx, level)   # finish for loop with statement
+        statement(tx, level, tx0)   # finish for loop with statement
 
         gen("LOD", level - table[i].level, table[i].adr)    # LOD lev-table[i].level, table[i].adr
         gen("LIT", 0, 1)
@@ -623,7 +624,7 @@ def statement(tx, level, tx0):
             getsym()
 
             print "sym here is: ", sym
-            statement(tx, level)
+            statement(tx, level, tx0)
 
             if sym != "semicolon":
                 error(32)
