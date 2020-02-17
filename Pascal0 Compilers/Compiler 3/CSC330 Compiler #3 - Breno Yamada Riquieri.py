@@ -623,7 +623,6 @@ def statement(tx, level, tx0):
                 error(31)
             getsym()
 
-            print "sym here is: ", sym
             statement(tx, level, tx0)
 
             if sym != "semicolon":
