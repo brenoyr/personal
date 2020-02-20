@@ -9,7 +9,7 @@
 #########################################################
 import sys, string
 
-norw = 26      #number of reserved words
+norw = 26      # updated number of reserved words
 txmax = 100   #length of identifier table
 nmax = 14      #max number of digits in number
 al = 10          #length of identifiers
@@ -356,8 +356,10 @@ def enter(tx, k, level, dx):
         dx += 1
     elif k == "procedure":
         x = tableValue(id, k, level, dx, "NULL")
+    ################ BRENO MOD BEGIN ####################
     elif k == "function":
-        x = tableValue(id, k, level, dx, "NULL")
+        x = tableValue(id, k, level, dx, "NULL")        # same as procedure
+    ################ BRENO MOD ENDS ####################
     table.append(x)
     return dx
 #--------------CONST DECLARATION---------------------------
@@ -451,6 +453,7 @@ def statement(tx, level, tx0):
         i = position(tx, id)
         if i==0:
             error(11)
+        ####################### CHANGES STARTING HERE #####################
         elif table[i].kind != "variable" and table[i].kind != "function":
             error(36)
         savekind = table[i].kind    # save kind
@@ -465,6 +468,7 @@ def statement(tx, level, tx0):
             error(37)                                           # can't assign to this function here
         else:                                                   # if kind is function and in its body
             gen("STO", 0, -1)                                   # STO 0, -1
+        ####################### CHANGES ENDING HERE #####################
     elif sym == "CALL":
         getsym()
         if sym != "ident":
@@ -680,27 +684,30 @@ def expression(tx, level):
     else:
         term(tx, level)
     
-    while sym == "plus" or sym == "minus" or sym == "OR": ############################MODIFY HERE FOR "OR"
+    while sym == "plus" or sym == "minus" or sym == "OR":
         addop = sym
         getsym()
         term(tx, level)
-        
+        ####################### CHANGES STARTING HERE #####################
         if(addop == "plus" or addop == "OR"):
             gen("OPR", 0, 2)       # add and "or" operation
         else:
             gen("OPR", 0, 3)       # subtract operation  
+        ####################### CHANGES ENDING HERE #####################
 #-------------TERM----------------------------------------------------
 def term(tx, level):
     global sym;
     factor(tx, level)
-    while sym=="times" or sym=="slash" or sym=="AND": #############################MODIFY HERE FOR "AND"
+    while sym=="times" or sym=="slash" or sym=="AND":
         mulop = sym
         getsym()
         factor(tx, level)
+        ####################### CHANGES STARTING HERE #####################
         if mulop == "times" or mulop == "AND":
             gen("OPR", 0, 4)         #multiply and "and" operation
         else:
             gen("OPR", 0, 5)         #divide operation
+        ####################### CHANGES ENDING HERE #####################
 #-------------FACTOR--------------------------------------------------
 def factor(tx, level):
     global sym, num, id;
@@ -708,6 +715,7 @@ def factor(tx, level):
         i = position(tx, id)
         if i==0:
             error(11)
+        ####################### CHANGES STARTING HERE #####################
         if table[i].kind == "const":                        # if constant
             gen("LIT", 0, table[i].value)                   # LIT 0, table[i].val
         elif table[i].kind == "variable":                   # if variable
@@ -715,6 +723,7 @@ def factor(tx, level):
         elif table[i].kind == "procedure":                  # if procedure/function
             error(21)                                       # error!
         getsym()
+        ####################### CHANGES ENDING HERE #####################
     elif sym == "number":
         gen("LIT", 0, num)
         getsym()
@@ -731,11 +740,13 @@ def factor(tx, level):
         i = position(tx, id)
         if i==0:
             error(11)
+        ####################### CHANGES STARTING HERE #####################
         if table[i].kind != "function":
             error(35)                                       # must be a function!
         gen("INT", 0, 1)                                    # INT 0, 1
         gen("CAL", level - table[i].level, table[i].adr)    # CAL lev-table[i].level, table[i].adr
         getsym()
+        ####################### CHANGES ENDING HERE #####################
     elif sym == "NOT":
         getsym()
         factor(tx, level)
@@ -776,6 +787,7 @@ def generalExpression(tx, level):
 
 #-------------------MAIN PROGRAM------------------------------------------------------------#
 
+################ added AND, OR, NOT, and FUNCTION keywords #####################
 rword.append('AND')
 rword.append('BEGIN')
 rword.append('CALL')
