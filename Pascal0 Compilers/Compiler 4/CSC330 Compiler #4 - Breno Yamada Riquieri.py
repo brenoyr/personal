@@ -507,7 +507,7 @@ def statement(tx, level, tx0):
         i = position(tx, id)
         if i==0:
             error(11)
-        elif table[i].kind != "variable" and table[i].kind != "function"
+        elif table[i].kind != "variable" and table[i].kind != "function"\
             and table[i].kind != "value" and table[i].kind != "reference":  # needs to accept value and reference as well
             error(36)
         savekind = table[i].kind    # save kind
@@ -552,7 +552,7 @@ def statement(tx, level, tx0):
                         gen("LOD", level - table[i].level, table[i].adr)                # LOD lev-table[i].level, table[i].adr
                 else:                               # target is val
                     expression(tx)
-                p++
+                p += 1
                 if sym != "comma":
                     break
             if sym != "rparen":
@@ -840,7 +840,7 @@ def factor(tx, level):
                         gen("LOD", level - table[i].level, table[i].adr)                # LOD lev-table[i].level, table[i].adr
                 else:                               # target is val
                     expression(tx)
-                p++
+                p += 1
                 if sym != "comma":
                     break
             if sym != "rparen":
