@@ -483,9 +483,8 @@ def block(tableIndex, level):
             else:
                 error(4)
 
-            if sym != "semicolon":
-                error(10)
-            getsym()
+            # REMOVED SEMICOLON FROM HERE TO THE TOP OF BLOCK
+            
             block(tx[0], level+ 1)
         
             if sym != "semicolon":
