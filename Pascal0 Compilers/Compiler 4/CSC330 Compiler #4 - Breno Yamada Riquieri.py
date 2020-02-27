@@ -2,7 +2,7 @@
 #   Name:       Breno Yamada Riquieri                   #
 #   Class:      CSC330 - Programming Languages          #
 #   A:          Compiler Program #4                     #
-#   Due Date:   2/28/2020                               #
+#   Due Date:   2/28/2020 - 03/02/2020                  #
 #                                                       #
 #   Notes:      All 5 test cases compiling successfully #
 #########################################################
@@ -30,7 +30,8 @@ class tableValue():
         self.value = value
         self.level = level
         # ADDED: parameter list of booleans
-        self.params = []
+        if kind == "function" or kind == "procedure":
+            self.params = []
 #----------commands to put in the array of assembly code-----------------------------------------------
 class Cmd():                            
     def __init__(self, line, cmd, statLinks, value):
