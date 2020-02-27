@@ -4,7 +4,7 @@
 #   A:          Compiler Program #4                     #
 #   Due Date:   2/28/2020                               #
 #                                                       #
-#   Notes:                                              #
+#   Notes:      All 5 test cases compiling successfully #
 #########################################################
 import sys, string
 
@@ -29,7 +29,8 @@ class tableValue():
         self.adr = adr
         self.value = value
         self.level = level
-    params = []         # parameter list of booleans
+        # ADDED: parameter list of booleans
+        self.params = []
 #----------commands to put in the array of assembly code-----------------------------------------------
 class Cmd():                            
     def __init__(self, line, cmd, statLinks, value):
@@ -372,6 +373,7 @@ def enter(tx, k, level, dx):
     elif k == "function":
         x = tableValue(id, k, level, dx, "NULL")
     ####################### CHANGES STARTING HERE #####################
+    # value and reference implemented like variable:
     elif k == "value":
         x = tableValue(id, k, level, dx, "NULL")
         dx += 1
@@ -417,8 +419,6 @@ def block(tableIndex, level):
     gen("JMP", 0 , 0)
     ####################### CHANGES STARTING HERE #####################
     if level > 0:
-        print table[tx0].params
-        print "RIGHT HERE SYM IS: ", sym
         if sym == "semicolon":
             getsym()
             pass
@@ -440,17 +440,13 @@ def block(tableIndex, level):
                     table[tx0].params.append(False)     # increasing size of the parameter list
 
                     if savedSym == "VAL":
-                        dx = enter(tx, "value", level, dx)                   ################## ENTER(TX) OR ENTER(TX0) ???????????
-                        
-                        table[tx0].params[dx-4] = False
-                        print "VAL (should be false): ", table[tx0].params[dx-4]
+                        dx = enter(tx, "value", level, dx)      # enter val in ST
+                        table[tx0].params[dx-4] = False         # setting it to "False" in parameter list to symbolize being "value"
                     else:   # savedSym == "REF"
-                        dx = enter(tx, "reference", level, dx) 
-
-                        table[tx0].params[dx-4] = True
-                        print "REF (should be True): ", table[tx0].params[dx-4]
-                    
+                        dx = enter(tx, "reference", level, dx)  # enter ref in ST
+                        table[tx0].params[dx-4] = True          # setting it to "True" in parameter list to symbolize being "ref"
                     getsym()
+
                     if sym != "comma":
                         break
                     
@@ -465,7 +461,7 @@ def block(tableIndex, level):
                 error(10)
             getsym()
     ####################### CHANGES ENDING HERE #####################
-    while sym == "PROCEDURE" or sym == "FUNCTION" or sym == "VAR" or sym == "CONST":   ################# MAYBE THIS IS NOT WHERE LEVEL > 0 SHOULD BE
+    while sym == "PROCEDURE" or sym == "FUNCTION" or sym == "VAR" or sym == "CONST":
         if sym == "CONST":
             while True:               #makeshift do while in python
                 getsym()
@@ -496,13 +492,14 @@ def block(tableIndex, level):
             else:
                 error(4)
 
-            # REMOVED SEMICOLON FROM HERE TO THE TOP OF BLOCK
+            # REMOVED SEMICOLON FROM HERE AND MOVED IT TO THE TOP OF BLOCK
 
             block(tx[0], level+ 1)
         
             if sym != "semicolon":
                 error(10)
             getsym()
+
     fixJmp(cx1, codeIndx)
     if tx0 != 0:
         table[tx0].adr = codeIndx
@@ -552,23 +549,30 @@ def statement(tx, level, tx0):
         if sym == "lparen":
             p = 0
             gen("INT", 0, 3)    # "fake" call
+
             while True:
                 getsym()
                 if table[i].params[p] == True:      # target is ref
                     if sym != "ident":
                         error(14)
-                    print "EURHIAUDHFKJADFH ",table[i].params
-                    print sym # sym is ident here, so now we need to see if this sym is ref or value
-                    if table[i].kind == "variable" or table[i].kind == "value":         # if variable or value
-                        gen("LDA", level - table[i].level, table[i].adr)                # LDA lev-table[i].level, table[i].adr
-                    else:# table[i].kind == "reference":                                  # if reference
-                        gen("LOD", level - table[i].level, table[i].adr)                # LOD lev-table[i].level, table[i].adr
-                    getsym()    ##################################### MAYBE THIS IS AFTER CHECKING TABLE[I].KIND !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    j = position(tx, id)            # for getting ident types
+                    if j == 0:
+                        error(15)   # calling a constant
+
+                    if table[j].kind == "variable" or table[j].kind == "value":         # if variable or value
+                        gen("LDA", level - table[j].level, table[j].adr)                # LDA lev-table[i].level, table[i].adr
+                    elif table[j].kind == "reference":                                  # if reference
+                        gen("LOD", level - table[j].level, table[j].adr)                # LOD lev-table[i].level, table[i].adr
+                    else:
+                        error(10000000) # expected var/val/ref
+                    getsym()
                 else:                               # target is val
                     expression(tx, level)
+
                 p += 1
                 if sym != "comma":
                     break
+
             if sym != "rparen":
                 error(22)
             gen("INT", 0, -(3 + p))                 # INT 0, -(3+p)
@@ -816,7 +820,7 @@ def factor(tx, level):
         elif table[i].kind == "reference":                                  # if reference
             gen("LDI", level - table[i].level, table[i].adr)                # LDI lev-table[i].level, table[i].adr
         ####################### CHANGES ENDING HERE #####################
-        elif table[i].kind == "procedure":                                  # if procedure/function
+        elif table[i].kind == "procedure" or table[i].kind == "function":   # if procedure/function
             error(21)                                                       # error!
         getsym()
     elif sym == "number":
@@ -843,21 +847,30 @@ def factor(tx, level):
         if sym == "lparen":
             p = 0
             gen("INT", 0, 3)    # "fake" call
+
             while True:
                 getsym()
                 if table[i].params[p] == True:      # target is ref
                     if sym != "ident":
                         error(14)
-                    getsym()    ##################################### MAYBE THIS IS AFTER CHECKING TABLE[I].KIND !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                    if table[i].kind == "variable" or table[i].kind == "value":         # if variable or value
-                        gen("LDA", level - table[i].level, table[i].adr)                # LDA lev-table[i].level, table[i].adr
-                    else:# table[i].kind == "reference":                                  # if reference
-                        gen("LOD", level - table[i].level, table[i].adr)                # LOD lev-table[i].level, table[i].adr
+                    j = position(tx, id)            # for getting ident types
+                    if j == 0:
+                        error(15)   # calling a constant
+
+                    if table[j].kind == "variable" or table[j].kind == "value":         # if variable or value
+                        gen("LDA", level - table[j].level, table[j].adr)                # LDA lev-table[i].level, table[i].adr
+                    elif table[j].kind == "reference":                                  # if reference
+                        gen("LOD", level - table[j].level, table[j].adr)                # LOD lev-table[i].level, table[i].adr
+                    else:
+                        error(10000000) ############# expected var/val/ref
+                    getsym()
                 else:                               # target is val
                     expression(tx, level)
+
                 p += 1
                 if sym != "comma":
                     break
+
             if sym != "rparen":
                 error(22)
             gen("INT", 0, -(3 + p))                 # INT 0, -(3+p)
