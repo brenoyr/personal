@@ -2,8 +2,8 @@ VAR A;
 
 FUNCTION FIBONACCI(VAL N);
     BEGIN
-        IF (N < 2) THEN
-            IF (N = 0) THEN
+        IF (N < 3) THEN
+            IF (N = 1) THEN
                 FIBONACCI := 0
             ELSE
                 FIBONACCI := 1
