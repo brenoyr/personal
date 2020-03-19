@@ -8,11 +8,14 @@
 
 from sys import stdin
 
-# the alphabet
-ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()-_=+[{]}\|;:'\",<.>/? "
-#ALPHABET = " -,;:!?/.'\"()[]$&#%012345789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxyYzZ"
+DEBUG = True
 
-THRESHOLD = 0.75
+# the alphabet
+# ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()-_=+[{]}\|;:'\",<.>/? "
+ALPHABET = " -,;:!?/.'\"()[]$&#%012345789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxyYzZ"
+
+# THRESHOLD = 0.75
+THRESHOLD = 0.5
 
 # the dictionary
 DICTIONARY_FILE = "dictionary.txt"
@@ -45,29 +48,56 @@ f.close()
 
 ciphertext = stdin.read().rstrip("\n")
 ciphertext = ciphertext.split("\n")[:10]    #################### dont forget to change this
-#print ciphertext
 
-# apply rotations through the entire alphabet:
-for i in range (1, len(ALPHABET)):
-    
-    # print "\n\n", i
-    plaintext = rot(ciphertext, i)
-    words = plaintext.split(" ")
+if (DEBUG):
+    # apply rotations through the entire alphabet:
+    for i in range (1, len(ALPHABET)):
+        plaintext = rot(ciphertext, i)
+        words = plaintext.split(" ")
 
-    # checking if the words in the plaintext match words in the dictionary:
-    count = 0
-    for word in words:
-        validWord = ""
+        # checking if the words in the plaintext match words in the dictionary:
+        count = 0
+        for word in words:
+            validWord = ""
 
-        for w in word:
-            if w.isalpha():
-                validWord = "".join([validWord, w]).lower()
-        #print validWord
-        if validWord in dictionary.lower():
-            count += 1
+            # filtering out alphabet symbols that are not A-Z or a-z and calling it validWord:
+            for w in word:
+                if w.isalpha():
+                    validWord = "".join([validWord, w]).lower()
 
-    # print count, i
-    # if enough words match word in the dictionary:
-    if (count > len(words) * THRESHOLD):
-        print "Shift is {}\nPlaintext: {}".format(95-i, plaintext)
-        # print "Shift is {}\nPlaintext: {}".format(95-i, "".join(words))
+            # considering the possibility of small words (less than 4) among gibberish:
+            if validWord in dictionary:
+                if (len(validWord) > 3):
+                    count += 1
+                
+        # if enough words match word in the dictionary:
+        if (count > len(words) * THRESHOLD):
+            print "Shift is {}\nPlaintext: {}".format(95-i, plaintext)
+
+
+################ IGNORE THIS PART BELOW! ################
+
+
+# else:
+#     for i in range (1, len(ALPHABET)):
+#         plaintext = rot(ciphertext, i)
+#         words = plaintext.split(" ")
+
+#         # checking if the words in the plaintext match words in the dictionary:
+#         count = 0
+#         for word in words:
+#             if (len(word) > 2):
+#                 validWord = ""
+
+#                 for w in word:
+#                     if w.isalpha():
+#                         validWord = "".join([validWord, w]).lower()
+
+#                 if validWord in dictionary:
+#                     # print "CHECK for validWord: ", validWord
+#                     if (len(validWord) > 3):
+#                         count += 1
+                
+#         # if enough words match word in the dictionary:
+#         if (count > len(words) * THRESHOLD):
+#             print "Shift is {}\nPlaintext: {}".format(95-i, plaintext)
