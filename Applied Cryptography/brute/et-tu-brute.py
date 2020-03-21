@@ -3,18 +3,17 @@
 #   Class:      CSC444 - Applied Cryptography           #
 #   A:          Et tu, brute?                           #
 #   Due Date:   03/23/2020                              #
-#                                                       #
+#   Comments:   The three ciphertexts are working       #
+#               Threshold = 0.5; len(word) > 3          #
 #########################################################
 
 from sys import stdin
-
-DEBUG = True
 
 # the alphabet
 ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()-_=+[{]}\|;:'\",<.>/? "   # len 95
 # ALPHABET = " -,;:!?/.'\"()[]$&#%012345789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxyYzZ"                  # len 79
 
-# THRESHOLD = 0.75
+# the threshold. 0.5 works well together with considering a word "valid" iff len(word) > 3
 THRESHOLD = 0.5
 
 # the dictionary
@@ -47,57 +46,29 @@ dictionary = f.read().rstrip("\n").lower().strip("\n")
 f.close()
 
 ciphertext = stdin.read().rstrip("\n")
-ciphertext = ciphertext.split("\n")    #################### dont forget to change this
+ciphertext = ciphertext.split("\n")
 
-if (DEBUG):
-    # apply rotations through the entire alphabet:
-    for i in range (1, len(ALPHABET)):
-        plaintext = rot(ciphertext, i)
+# apply rotations through the entire alphabet:
+for i in range (1, len(ALPHABET)):
+    plaintext = rot(ciphertext, i)
 
-        words = plaintext.split(" ")
+    words = plaintext.split(" ")
 
-        # checking if the words in the plaintext match words in the dictionary:
-        count = 0
-        for word in words:
-            validWord = ""
+    # checking if the words in the plaintext match words in the dictionary:
+    count = 0
+    for word in words:
+        validWord = ""
 
-            # filtering out alphabet symbols that are not A-Z or a-z and calling it validWord:
-            for w in word:
-                if w.isalpha():
-                    validWord = "".join([validWord, w]).lower()
+        # filtering out alphabet symbols that are not A-Z or a-z and calling it validWord:
+        for w in word:
+            if w.isalpha():
+                validWord = "".join([validWord, w]).lower()     # lower case to match words in the dictionary
 
-            # considering the possibility of small words (less than 4) among gibberish:
-            if validWord in dictionary:
-                if (len(validWord) > 3):
-                    count += 1
-        
-        # if enough words match word in the dictionary:
-        if (count > len(words) * THRESHOLD):
-            print "Shift is {}\nPlaintext: {}".format(len(ALPHABET)-i, plaintext)
-
-################ IGNORE THIS PART BELOW! ################
-
-
-# else:
-#     for i in range (1, len(ALPHABET)):
-#         plaintext = rot(ciphertext, i)
-#         words = plaintext.split(" ")
-
-#         # checking if the words in the plaintext match words in the dictionary:
-#         count = 0
-#         for word in words:
-#             if (len(word) > 2):
-#                 validWord = ""
-
-#                 for w in word:
-#                     if w.isalpha():
-#                         validWord = "".join([validWord, w]).lower()
-
-#                 if validWord in dictionary:
-#                     # print "CHECK for validWord: ", validWord
-#                     if (len(validWord) > 3):
-#                         count += 1
-                
-#         # if enough words match word in the dictionary:
-#         if (count > len(words) * THRESHOLD):
-#             print "Shift is {}\nPlaintext: {}".format(95-i, plaintext)
+        # considering the possibility that there are small words (less than 4) among gibberish:
+        if validWord in dictionary:
+            if (len(validWord) > 3):
+                count += 1
+    
+    # if enough words match word in the dictionary:
+    if (count > len(words) * THRESHOLD):
+        print "SHIFT={}:\nPlaintext: {}".format(len(ALPHABET)-i, plaintext)
