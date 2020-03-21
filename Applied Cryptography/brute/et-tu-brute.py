@@ -11,8 +11,8 @@ from sys import stdin
 DEBUG = True
 
 # the alphabet
-# ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()-_=+[{]}\|;:'\",<.>/? "
-ALPHABET = " -,;:!?/.'\"()[]$&#%012345789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxyYzZ"
+ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()-_=+[{]}\|;:'\",<.>/? "   # len 95
+# ALPHABET = " -,;:!?/.'\"()[]$&#%012345789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxyYzZ"                  # len 79
 
 # THRESHOLD = 0.75
 THRESHOLD = 0.5
@@ -38,7 +38,7 @@ def rot(ciphertext, shift):
 
         rotatedcipher += "".join(cipherline)
         rotatedcipher += "\n"
-    
+
     return rotatedcipher
 
 # read in the dictonary:
@@ -47,12 +47,13 @@ dictionary = f.read().rstrip("\n").lower().strip("\n")
 f.close()
 
 ciphertext = stdin.read().rstrip("\n")
-ciphertext = ciphertext.split("\n")[:10]    #################### dont forget to change this
+ciphertext = ciphertext.split("\n")    #################### dont forget to change this
 
 if (DEBUG):
     # apply rotations through the entire alphabet:
     for i in range (1, len(ALPHABET)):
         plaintext = rot(ciphertext, i)
+
         words = plaintext.split(" ")
 
         # checking if the words in the plaintext match words in the dictionary:
@@ -69,11 +70,10 @@ if (DEBUG):
             if validWord in dictionary:
                 if (len(validWord) > 3):
                     count += 1
-                
+        
         # if enough words match word in the dictionary:
         if (count > len(words) * THRESHOLD):
-            print "Shift is {}\nPlaintext: {}".format(95-i, plaintext)
-
+            print "Shift is {}\nPlaintext: {}".format(len(ALPHABET)-i, plaintext)
 
 ################ IGNORE THIS PART BELOW! ################
 
