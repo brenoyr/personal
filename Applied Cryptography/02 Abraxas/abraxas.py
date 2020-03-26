@@ -10,7 +10,7 @@ from sys import stdin
 
 # the alphabet
 ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()-_=+[{]}\|;:'\",<.>/? "
-ALPHABET = " -,;:!?/.'\"()[]$&#%012345789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxyYzZ"
+# ALPHABET = " -,;:!?/.'\"()[]$&#%012345789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxyYzZ"
 
 # the threshold and minimum length for a word to be considered "valid"
 THRESHOLD = 0.3
@@ -81,18 +81,22 @@ dictionaryList = dictionary.split("\n")
 ciphertext = stdin.read().rstrip("\n")
 ciphertext = ciphertext.split("\n")
 
-
+# checking every word in the dictionary for a possible valid key:
 for keyword in dictionaryList:
+
+    # this keyword cipher only works with keys that have unique characters:
     if isUniqueChars(keyword):
         plaintext = decrypt(ciphertext, keyword)
-
         words = plaintext.split(" ")
 
+        # checking if the words in the plaintext match words in the dictionary
+        # (they also need to satisfy the minimum word length):
         count = 0
         for word in words:
             if word in dictionary and len(word) >= MIN_WORD_LEN:
                 count += 1
 
+        # if enough words match word in the dictionary:
         if count >  len(words) * THRESHOLD:
             print "KEY={}:\n{}".format(keyword, plaintext)
 
