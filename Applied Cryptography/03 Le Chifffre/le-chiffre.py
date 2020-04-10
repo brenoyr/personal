@@ -93,7 +93,7 @@ if len(ciphertext.split("\n")) >= 10:
 
 ciphertext = "\n".join(ciphertext.split("\n")[:10])
 
-# checking every word in the dictionary for a possible valid key:
+# checking every word in the dictionary to construct key string:
 for keyword in dictionary:
     key = generateKey(ciphertext, keyword)
 
