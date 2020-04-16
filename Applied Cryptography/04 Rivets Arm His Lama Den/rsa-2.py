@@ -1,13 +1,3 @@
-#########################################################
-#   Name:       Breno Yamada Riquieri                   #
-#   Class:      CSC444 - Applied Cryptography           #
-#   A:          Rivets Arm His Lama Den                 #
-#   Due Date:   04/17/2020                              #
-#   Comments:   Python 2.7.17                           #
-#                                                       #
-#               Works with ciphertexts 1-3.             #
-#########################################################
-
 # Rivets Arm His Lama Den
 # Implements a simplistic RSA algorithm with the following characteristics:
 # -expect input to contain the public key on the first line and a comma separated list of numbers representing encrypted values on the second line
@@ -25,9 +15,6 @@
 # -rebuild the original message
 
 from sys import stdin, stdout, stderr
-
-MIN_PRIME = 100
-MAX_PRIME = 999
 
 # determines if a given number is prime
 def isPrime(n):
@@ -68,74 +55,40 @@ def decrypt(C, K_priv):
 	# K_priv = (d, n)
 	return (C ** K_priv[0]) % K_priv[1]
 
-# generates all e's in the form 2^n + 1
-def genEs(z):
-    es = []
-    e = 3       # first prime > 2
-    exp = 1     # exponent
-
-    while e < z:
-        es.append(e)
-        exp *= 2
-        e = ((2 ** exp) + 1)
-    
-    return es
-
 # MAIN
 # get input
 ciphertext = stdin.read().rstrip("\n").split("\n")
 
 # grab the public key and ciphertext values
-n = int(ciphertext[0])
+K_pub = eval(ciphertext[0])
 C = ciphertext[1].split(",")
+
+# isolate e and n from the public key
+e = K_pub[0]
+n = K_pub[1]
 
 # factor n into p and q
 p, q = factor(n)
-print "p={}, q={}".format(p, q)
-print "n={}".format(n)
 
 # calculate z
 z = ((p - 1) * (q - 1)) / gcd(p - 1, q - 1)
-print "z={}".format(z)
 
-# get the es (in the form of 2^n + 1)
-es = genEs(z)
+# calculate d
+d = naiveInverse(e, z)
 
-# naive method:
-for i in range (0, len(es)):
-    e = es[i]
-    print "--"
-    print "Trying e={}".format(e)
+# generate the private key
+K_priv = (d, n)
 
-    # calculate d
-    d = naiveInverse(e, z)
+# implement RSA for the specified input Cs
+M = ""
+for c in C:
+	m = decrypt(int(c), K_priv)
+	try:
+		M += chr(m)
+		stdout.write(chr(m))
+		stdout.flush()
+	except:
+		print "ERROR: invalid plaintex/key\n"
+		break
 
-    if d == None:
-        print "No d found"
-        continue    # go to the next e
-
-    print "d={}".format(d)
-
-    # generate the public key
-    K_pub = (e, n)
-    print "Public key: {}".format(K_pub)
-
-    # generate the private key
-    K_priv = (d, n)
-    print "Private key: {}".format(K_priv)
-
-    stdout.flush()
-
-    # implement RSA for the specified input Cs
-    M = ""
-    for c in C:
-        m = decrypt(int(c), K_priv)
-        try:
-            M += chr(m)
-            stdout.write(chr(m))
-            stdout.flush()
-        except:
-            print "ERROR: invalid plaintext."
-            break
-
-    print
+print
