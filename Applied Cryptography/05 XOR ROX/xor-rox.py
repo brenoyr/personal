@@ -6,7 +6,7 @@
 #                                                       #
 #               Encrypt and Decrypt working             #
 #                                                       #
-#             !!  PLEASE SAVE KEY AS "05.key" !!        #
+#               The key file is read from stdin         #
 #########################################################
 
 # XOR ROX
@@ -15,7 +15,7 @@
 #  (keep them that way!)
 
 from PIL import Image
-
+from sys import stdin
 from random import randint
 
 # mode
@@ -87,11 +87,7 @@ if (DECRYPT == False):
 # Decryption
 else:
     # read the key file
-    KEY_FILE = "05.key"
-
-    f = open(KEY_FILE, "r")
-    key = f.read().rstrip("\n")
-    f.close()
+    key = ciphertext = stdin.read().rstrip("\n")
 
     # make it into a list of rgb values
     key = key.split("\n")
