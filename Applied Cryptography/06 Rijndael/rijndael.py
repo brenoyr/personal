@@ -9,7 +9,7 @@
 # Rijndael
 # Sample template to show how to implement AES in Python
 
-from sys import stdin
+from sys import stdin, stdout, stderr
 from re import sub
 from hashlib import sha256
 from Crypto import Random
@@ -21,9 +21,6 @@ BLOCK_SIZE = 16
 # the padding character to use to make the plaintext a multiple of BLOCK_SIZE in length
 PAD_WITH = "#"
 
-# use dictionary or generate all candidate plaintexts
-USE_DICTIONARY = True
-
 # set the dictionary
 DICTIONARY = "dictionary1-3.txt"
 # DICTIONARY = "dictionary4.txt"
@@ -33,7 +30,10 @@ DICTIONARY = "dictionary1-3.txt"
 THRESHOLD = 0.5
 MIN_WORD_LEN = 3
 
+# hint from watching the video
 # process the dictionary in reverse order
+# ciphertext 3 benefits from this since its
+# key is closer to the end of the dictionary
 REVERSE = False
 
 # set dictionary filter
@@ -43,6 +43,12 @@ FILTER = []
 # look for a specific tag at the beginning of candidate plaintext?
 USE_TAG = False
 TAG = "%PDF-1.4"
+
+# set to True to write key to stderr
+SPIT_KEY = True
+
+# set to True to stop after finding a candidate plaintext
+BREAK = True
 
 # decrypts a ciphertext with a key
 def decrypt(ciphertext, key):
@@ -95,8 +101,16 @@ f = open(DICTIONARY, "r")
 lower_dictionary = f.read().rstrip("\n").lower().split("\n")
 f.close()
 
+# reverse dictionary if desired
+# note that we don't need to reverse
+# the dictionary used for comparing normalized words
+# (it would be redundant)
+if REVERSE:
+	dictionary.reverse()
+
 # read in the ciphertext
 ciphertext = stdin.read().rstrip("\n")
+
 
 for keyword in dictionary:
     # check if we should filter
@@ -104,6 +118,7 @@ for keyword in dictionary:
         if keyword[0] not in FILTER:
             continue
 
+	# decrypt plaintext and 
     plaintext = decrypt(ciphertext, keyword)
     words = plaintext.split(" ")
 
@@ -117,6 +132,12 @@ for keyword in dictionary:
         if normalized in lower_dictionary and len(normalized) >= MIN_WORD_LEN:
             count += 1
 
-    if count >  len(words) * THRESHOLD:
-        print "KEY={}:\n{}".format(keyword, plaintext)
-        exit(0)
+    if count > len(words) * THRESHOLD:
+		if SPIT_KEY:
+			stderr.write("KEY={}\n".format(keyword))
+			stdout.write("{}\n".format(plaintext))
+		else:	
+			stdout.write("KEY={}:\n{}\n".format(keyword, plaintext))
+		
+		if BREAK:
+			exit(0)
