@@ -1,5 +1,6 @@
 # Rijndael
 # Sample template to show how to implement AES in Python
+# Added the removal of padding after decryption
 
 from sys import stdin
 from hashlib import sha256
@@ -27,7 +28,11 @@ def decrypt(ciphertext, key):
 	plaintext = cipher.decrypt(ciphertext[16:])
 
 	# remove potential padding at the end of the plaintext
-	# figure this one out...
+	# if there's padding (which means at least the last char
+	# in the string is PAD_WITH), replace all occurences of PAD_WITH
+	# with '' (nothing)
+	if plaintext[-1] == PAD_WITH:
+		plaintext = str(plaintext.replace(PAD_WITH, ''))
 
 	return plaintext
 
