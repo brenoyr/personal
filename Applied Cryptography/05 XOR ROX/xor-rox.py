@@ -87,7 +87,7 @@ if (DECRYPT == False):
 # Decryption
 else:
     # read the key file
-    key = ciphertext = stdin.read().rstrip("\n")
+    key = stdin.read().rstrip("\n")
 
     # make it into a list of rgb values
     key = key.split("\n")
