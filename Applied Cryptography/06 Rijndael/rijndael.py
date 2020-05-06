@@ -3,11 +3,9 @@
 #   A:          Rijndael                                #
 #   Due Date:   05/08/2020                              #
 #   Comments:   Python 2.7.17                           #
-#                                                       #
+#														#
+#               Ciphertexts 1-5 working                 #
 #########################################################
-
-# Rijndael
-# Sample template to show how to implement AES in Python
 
 from sys import stdin, stdout, stderr
 from re import sub
@@ -30,13 +28,15 @@ DICTIONARY = "dictionary1-3.txt"
 THRESHOLD = 0.5
 MIN_WORD_LEN = 3
 
-# hint from watching the video
-# process the dictionary in reverse order
+# hint from watching the video.
+# process the dictionary in reverse order.
 # ciphertext 3 benefits from this since its
 # key is closer to the end of the dictionary
 REVERSE = False
 
-# set dictionary filter
+# set dictionary filter.
+# hint for ciphertext 4 was that
+# the key started with either "J" or "j"
 FILTER = []
 # FILTER = ["J", "j"]
 
@@ -44,7 +44,9 @@ FILTER = []
 USE_TAG = False
 TAG = "%PDF-1.4"
 
-# set to True to write key to stderr
+# set to True to write key to stderr.
+# send output to a temp file and then
+# only the key will be shown in terminal
 SPIT_KEY = True
 
 # set to True to stop after finding a candidate plaintext
@@ -63,12 +65,17 @@ def decrypt(ciphertext, key):
 	# the ciphertext is after the IV (so, skip 16 bytes)
 	plaintext = cipher.decrypt(ciphertext[16:])
 
-	# remove potential padding at the end of the plaintext
+	# remove potential padding at the end of the plaintext.
 	# if there's padding (which means at least the last char
-	# in the string is PAD_WITH), replace all occurences of PAD_WITH
-	# with '' (nothing)
+	# in the string is PAD_WITH), check how many by going backwards.
+	# once we know where the padding starts, adjust the plaintext
 	if plaintext[-1] == PAD_WITH:
-		plaintext = str(plaintext.replace(PAD_WITH, ''))
+		cur = -1
+		length = len(plaintext)
+		while plaintext[cur] == PAD_WITH:
+			cur -= 1
+			length -= 1
+		plaintext = plaintext[:length]
 
 	return plaintext
 
@@ -111,33 +118,44 @@ if REVERSE:
 # read in the ciphertext
 ciphertext = stdin.read().rstrip("\n")
 
-
 for keyword in dictionary:
     # check if we should filter
-    if FILTER:
-        if keyword[0] not in FILTER:
-            continue
+	if FILTER:
+		if keyword[0] not in FILTER:
+			continue
 
-	# decrypt plaintext and 
-    plaintext = decrypt(ciphertext, keyword)
-    words = plaintext.split(" ")
+	# decrypt plaintext and split it into words
+	plaintext = decrypt(ciphertext, keyword)
+	words = plaintext.split(" ")
 
-    # checking if the words in the plaintext match words in the dictionary
-    # (they also need to satisfy the minimum word length):
-    count = 0
-    for word in words:
-        # removing punctuation from the word
-        normalized = sub(r'[^\w]+','', word).lower()
-
-        if normalized in lower_dictionary and len(normalized) >= MIN_WORD_LEN:
-            count += 1
-
-    if count > len(words) * THRESHOLD:
-		if SPIT_KEY:
+	# if we are looking for a tag
+	if USE_TAG:
+		# found candidate plaintext 
+		# if it finds that tag at the
+		# start of the plaintext file
+		# (redirecting output to a file
+		# will still print key to stdout)
+		if TAG in words[0]:
 			stderr.write("KEY={}\n".format(keyword))
 			stdout.write("{}\n".format(plaintext))
-		else:	
-			stdout.write("KEY={}:\n{}\n".format(keyword, plaintext))
-		
-		if BREAK:
 			exit(0)
+	else:
+		# checking if the words in the plaintext match words in the dictionary
+		# (they also need to satisfy the minimum word length):
+		count = 0
+		for word in words:
+			# removing punctuation from the word
+			normalized = sub(r'[^\w]+','', word).lower()
+
+			if normalized in lower_dictionary and len(normalized) >= MIN_WORD_LEN:
+				count += 1
+
+		if count > len(words) * THRESHOLD:
+			if SPIT_KEY:
+				stderr.write("KEY={}\n".format(keyword))
+				stdout.write("{}\n".format(plaintext))
+			else:
+				stdout.write("KEY={}:\n{}\n".format(keyword, plaintext))
+			
+			if BREAK:
+				exit(0)
