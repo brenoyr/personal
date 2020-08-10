@@ -1,0 +1,42 @@
+body {
+    background:  rgba(0,0,0, .6);
+    font-family: 'Times New Roman', sans-serif, Times, serif;
+}
+
+p {
+    color: rgba(255, 255, 255, .75);
+}
+
+#header {
+    color: rgb(95, 2, 31);
+    font-weight: 800;
+    text-align: center;
+    font-size: 42px;
+}
+
+.title {
+    color: rgb(95, 2, 31);
+    text-decoration: underline;
+    font-size: 27px;
+}
+
+.subtitle {
+    color: rgb(95, 2, 31);
+    font-size: 22px;
+}
+
+.list-item {
+    color: rgba(255, 255, 255, .75);
+}
+
+.link {
+    text-decoration: underline;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.italics {
+    font-style: italic;
+}
