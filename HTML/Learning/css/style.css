@@ -7,6 +7,7 @@ body {
 #title {
     color: rgb(95, 2, 31);
     font-weight: 800;
+    text-align: center;
 }
 
 .subtitle {
@@ -32,8 +33,4 @@ p {
 
 .italics {
     font-style: italic;
-}
-
-table {
-    color: rgba(255, 255, 255, .75);
 }
