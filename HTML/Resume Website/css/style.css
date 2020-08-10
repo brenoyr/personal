@@ -31,6 +31,7 @@ p {
 
 .link {
     text-decoration: underline;
+    color: rgb(95, 2, 31);
 }
 
 .bold {
@@ -39,4 +40,19 @@ p {
 
 .italics {
     font-style: italic;
+}
+
+/* Nav Bar */
+
+.topnav {
+    background-color:  rgb(95, 2, 31);
+    overflow: hidden;
+}
+
+.topnav a {
+    float: left;
+    color: rgba(255, 255, 255, .75);
+    text-align: center;
+    padding: 10px 12px;
+    text-decoration: none;
 }
