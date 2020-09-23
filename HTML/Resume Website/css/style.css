@@ -1,0 +1,58 @@
+body {
+    background:  rgba(0,0,0, .6);
+    font-family: 'Times New Roman', sans-serif, Times, serif;
+}
+
+p {
+    color: rgba(255, 255, 255, .75);
+}
+
+#header {
+    color: rgb(95, 2, 31);
+    font-weight: 800;
+    text-align: center;
+    font-size: 42px;
+}
+
+.title {
+    color: rgb(95, 2, 31);
+    text-decoration: underline;
+    font-size: 27px;
+}
+
+.subtitle {
+    color: rgb(95, 2, 31);
+    font-size: 22px;
+}
+
+.list-item {
+    color: rgba(255, 255, 255, .75);
+}
+
+.link {
+    text-decoration: underline;
+    color: rgb(95, 2, 31);
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.italics {
+    font-style: italic;
+}
+
+/* Nav Bar */
+
+.topnav {
+    background-color:  rgb(95, 2, 31);
+    overflow: hidden;
+}
+
+.topnav a {
+    float: left;
+    color: rgba(255, 255, 255, .75);
+    text-align: center;
+    padding: 10px 12px;
+    text-decoration: none;
+}

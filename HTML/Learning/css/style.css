@@ -1,3 +1,36 @@
+body {
+    /* background: rgba(204,229,255, .4); */
+    background:  rgba(0,0,0, .6);
+    font-family: 'Times New Roman', sans-serif, Times, serif;
+}
+
 #title {
-    color: rgb(194, 144, 17);
+    color: rgb(95, 2, 31);
+    font-weight: 800;
+    text-align: center;
+}
+
+.subtitle {
+    color: rgb(29, 78, 137);
+}
+
+#service-image {
+    height: 400px;
+    width: 70%;
+
+    /* background-image: url(../img/img-2.jpg); */
+    background-size: cover;
+    background: linear-gradient(to bottom right, rgb(106, 186, 128), rgba(106, 186, 128, 0));
+}
+
+.link {
+    text-decoration: underline;
+}
+
+p {
+    color: rgba(255, 255, 255, .75);
+}
+
+.italics {
+    font-style: italic;
 }
