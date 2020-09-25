@@ -1,8 +1,9 @@
 # personal
-personal testing
+personal archive
 
-CONTACT ME BEFORE USING MY CODE, I DO NOT ALLOW THE USE OF MY CODE WITHOUT PERMISSION (just ask)
+Please ask for permission before using my code!
 
 Data Structures in Java  
-Pascal0 Compilers, Applied Cryptography in Python  
+Pascal0 Compilers, Applied Cryptography, and Digital Forensics in Python  
 C++ OOP in C++ (First Programming Language)
+Resume Website in HTML and CSS
