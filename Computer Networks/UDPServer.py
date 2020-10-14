@@ -9,6 +9,12 @@
 # My IPAddr during development: 192.168.1.6
 
 from socket import *
+import random
+import time
+
+# get IP address
+hostname = gethostname()    
+IPAddr = gethostbyname(hostname)
 
 server_socket = socket(AF_INET, SOCK_DGRAM)
 
@@ -18,11 +24,8 @@ print "Server is ready to receive messages..."
 while(True):
     message, client_address = server_socket.recvfrom(2048)
     message = message.decode()
-    print "Received message: {}.\nFrom client: {}".format(message.decode(), client_address)
 
-
-    modified_message = message.upper()
-    print "Modified message: {}".format(modified_message.decode())
-
-    server_socket.sendto(modified_message.encode(), client_address)
-    print "\nMessage sent\n"
+    if random.randint(0,100) < 80:
+        server_socket.sendto(message.encode(), client_address)
+    else:
+        time.sleep(1)
